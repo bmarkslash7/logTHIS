@@ -1,40 +1,60 @@
-# EESchema Netlist Version 1.1 created  Sun 16 Dec 2012 05:20:56 AM EST
+# EESchema Netlist Version 1.1 created  Mon 24 Dec 2012 03:53:33 AM EST
 (
  ( /50CD8A2C C1 C1 .1mF
+  ( 1 GND )
+  ( 2 VCC )
+ )
+ ( /50CD8AE8 LEDV D1 LED
+  ( 1 /Vsensor )
+  ( 2 N-000015 )
+ )
+ ( /50D1679E SIL-3 K1 Sensor1
+  ( 1 /Vsensor )
+  ( 2 GND )
+  ( 3 /SENSOR1 )
+ )
+ ( /50D167A4 SIL-3 K2 Sensor0
+  ( 1 /Vsensor )
+  ( 2 GND )
+  ( 3 /SENSOR0 )
+ )
+ ( /50CD8A01 SIL-6 P1 CONN_6
+  ( 1 VCC )
+  ( 2 GND )
+  ( 3 /RST )
+  ( 4 /SDA )
+  ( 5 /PIN6 )
+  ( 6 /SCL )
+ )
+ ( /50D000B3 SIL-2 P2 Battery
   ( 1 VCC )
   ( 2 GND )
  )
- ( /50CD8AE8 LEDV D1 LED
-  ( 1 N-000001 )
-  ( 2 N-000002 )
+ ( /50D1666E SIL-4 P3 I2C_Sense
+  ( 1 /Vsensor )
+  ( 2 GND )
+  ( 3 /I2C_CLK )
+  ( 4 /I2C_DAT )
  )
- ( /50CD8A01 SIL-6 P1 CONN_6
-  ( 1 ? )
-  ( 2 ? )
-  ( 3 N-000014 )
-  ( 4 ? )
-  ( 5 N-000020 )
-  ( 6 ? )
- )
- ( /50CD8B00 TO92 Q1 MOSFET_N
+ ( /50CD8B00 TO92DGS Q1 MOSFET_N
   ( D VCC )
-  ( G N-000020 )
-  ( S N-000001 )
+  ( G /PIN6 )
+  ( S /Vsensor )
  )
- ( /50CD8A1C R1 R1 4.7k
-  ( 1 VCC )
-  ( 2 N-000005 )
+ ( /50D16F5C R3 R1 10k
+  ( 1 /PIN6 )
+  ( 2 VCC )
  )
- ( /50CD8A17 R1 R2 4.7k
-  ( 1 VCC )
-  ( 2 N-000018 )
+ ( /50D17445 R3 R2 4.7k
+  ( 1 /Vsensor )
+  ( 2 /I2C_CLK )
  )
- ( /50CD8A1F R1 R3 10k
-  ( 1 VCC )
-  ( 2 N-000020 )
+ ( /50D1744F R3 R3 4.7k
+  ( 1 /Vsensor )
+  ( 2 /I2C_DAT )
  )
- ( /50CD8A22 R1 R4 1k
-  ( 1 N-000002 )
+ ( /50CD8A22 R3 R4 1k
+  ( 1 N-000015 )
   ( 2 GND )
  )
  ( /50CD885F DIP-8__300_ELL U1 24AA1025
@@ -42,40 +62,34 @@
   ( 2 GND )
   ( 3 GND )
   ( 4 GND )
-  ( 5 N-000018 )
-  ( 6 N-000005 )
+  ( 5 /SDA )
+  ( 6 /SCL )
   ( 7 GND )
   ( 8 VCC )
  )
  ( /50CD8855 DIP-8__300_ELL U2 DS1337
-  ( 1 N-000006 )
-  ( 2 N-000007 )
-  ( 3 N-000020 )
+  ( 1 N-000012 )
+  ( 2 N-000013 )
+  ( 3 /PIN6 )
   ( 4 GND )
-  ( 5 N-000018 )
-  ( 6 N-000005 )
+  ( 5 /SDA )
+  ( 6 /SCL )
   ( 7 ? )
   ( 8 VCC )
  )
  ( /50CD886D DIP-8__300_ELL U3 ATTINY85V
-  ( 1 N-000014 )
-  ( 2 ? )
-  ( 3 ? )
+  ( 1 /RST )
+  ( 2 /SENSOR0 )
+  ( 3 /SENSOR1 )
   ( 4 GND )
-  ( 5 N-000018 )
-  ( 6 N-000020 )
-  ( 7 N-000005 )
+  ( 5 /I2C_DAT )
+  ( 6 /PIN6 )
+  ( 7 /I2C_CLK )
   ( 8 VCC )
  )
- ( /50CD884B MODULE U4 DHT22
-  ( 1 ? )
-  ( 2 ? )
-  ( 3 ? )
-  ( 4 ? )
- )
- ( /50CD8C7A LEDV X1 32.768_kHz
-  ( 1 N-000006 )
-  ( 2 N-000007 )
+ ( /50CD8C7A HC-18UV X1 32.768_kHz
+  ( 1 N-000012 )
+  ( 2 N-000013 )
  )
 )
 *
