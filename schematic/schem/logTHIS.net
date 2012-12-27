@@ -1,114 +1,100 @@
-# EESchema Netlist Version 1.1 created  Mon 24 Dec 2012 03:53:33 AM EST
+# EESchema Netlist Version 1.1 created  Wed 26 Dec 2012 11:09:26 PM EST
 (
- ( /50CD8A2C C1 C1 .1mF
-  ( 1 GND )
-  ( 2 VCC )
+ ( /50D1744F $noname  R3 4.7k {Lib=R}
+  (    1 /Vsensor )
+  (    2 /I2C_DAT )
  )
- ( /50CD8AE8 LEDV D1 LED
-  ( 1 /Vsensor )
-  ( 2 N-000015 )
+ ( /50D17445 $noname  R2 4.7k {Lib=R}
+  (    1 /Vsensor )
+  (    2 /I2C_CLK )
  )
- ( /50D1679E SIL-3 K1 Sensor1
-  ( 1 /Vsensor )
-  ( 2 GND )
-  ( 3 /SENSOR1 )
+ ( /50D16F5C $noname  R1 10k {Lib=R}
+  (    1 /PIN6 )
+  (    2 VCC )
  )
- ( /50D167A4 SIL-3 K2 Sensor0
-  ( 1 /Vsensor )
-  ( 2 GND )
-  ( 3 /SENSOR0 )
+ ( /50D167A4 $noname  K2 Sensor0 {Lib=CONN_3}
+  (    1 /Vsensor )
+  (    2 GND )
+  (    3 /SENSOR0 )
  )
- ( /50CD8A01 SIL-6 P1 CONN_6
-  ( 1 VCC )
-  ( 2 GND )
-  ( 3 /RST )
-  ( 4 /SDA )
-  ( 5 /PIN6 )
-  ( 6 /SCL )
+ ( /50D1679E $noname  K1 Sensor1 {Lib=CONN_3}
+  (    1 /Vsensor )
+  (    2 GND )
+  (    3 /SENSOR1 )
  )
- ( /50D000B3 SIL-2 P2 Battery
-  ( 1 VCC )
-  ( 2 GND )
+ ( /50D1666E $noname  P3 I2C_Sense {Lib=CONN_4}
+  (    1 /Vsensor )
+  (    2 GND )
+  (    3 /I2C_CLK )
+  (    4 /I2C_DAT )
  )
- ( /50D1666E SIL-4 P3 I2C_Sense
-  ( 1 /Vsensor )
-  ( 2 GND )
-  ( 3 /I2C_CLK )
-  ( 4 /I2C_DAT )
+ ( /50D000B3 $noname  P2 Battery {Lib=CONN_2}
+  (    1 VCC )
+  (    2 GND )
  )
- ( /50CD8B00 TO92DGS Q1 MOSFET_N
-  ( D VCC )
-  ( G /PIN6 )
-  ( S /Vsensor )
+ ( /50CD8C7A $noname  X1 32.768_kHz {Lib=CRYSTAL}
+  (    1 N-000009 )
+  (    2 N-000010 )
  )
- ( /50D16F5C R3 R1 10k
-  ( 1 /PIN6 )
-  ( 2 VCC )
+ ( /50CD8B00 $noname  Q1 MOSFET_N {Lib=MOSFET_N}
+  (    D VCC )
+  (    G /PIN6 )
+  (    S /Vsensor )
  )
- ( /50D17445 R3 R2 4.7k
-  ( 1 /Vsensor )
-  ( 2 /I2C_CLK )
+ ( /50CD8AE8 $noname  D1 LED {Lib=LED}
+  (    1 /Vsensor )
+  (    2 N-000012 )
  )
- ( /50D1744F R3 R3 4.7k
-  ( 1 /Vsensor )
-  ( 2 /I2C_DAT )
+ ( /50CD8A2C $noname  C1 .1mF {Lib=C}
+  (    1 GND )
+  (    2 VCC )
  )
- ( /50CD8A22 R3 R4 1k
-  ( 1 N-000015 )
-  ( 2 GND )
+ ( /50CD8A22 $noname  R4 1k {Lib=R}
+  (    1 N-000012 )
+  (    2 GND )
  )
- ( /50CD885F DIP-8__300_ELL U1 24AA1025
-  ( 1 GND )
-  ( 2 GND )
-  ( 3 GND )
-  ( 4 GND )
-  ( 5 /SDA )
-  ( 6 /SCL )
-  ( 7 GND )
-  ( 8 VCC )
+ ( /50CD8A01 $noname  P1 CONN_6 {Lib=CONN_6}
+  (    1 VCC )
+  (    2 GND )
+  (    3 /RST )
+  (    4 /I2C_DAT )
+  (    5 /PIN6 )
+  (    6 /I2C_CLK )
  )
- ( /50CD8855 DIP-8__300_ELL U2 DS1337
-  ( 1 N-000012 )
-  ( 2 N-000013 )
-  ( 3 /PIN6 )
-  ( 4 GND )
-  ( 5 /SDA )
-  ( 6 /SCL )
-  ( 7 ? )
-  ( 8 VCC )
+ ( /50CD886D MODULE  U3 ATTINY85V {Lib=ATTINY85V}
+  (    1 /RST )
+  (    2 /SENSOR0 )
+  (    3 /SENSOR1 )
+  (    4 GND )
+  (    5 /I2C_DAT )
+  (    6 /PIN6 )
+  (    7 /I2C_CLK )
+  (    8 VCC )
  )
- ( /50CD886D DIP-8__300_ELL U3 ATTINY85V
-  ( 1 /RST )
-  ( 2 /SENSOR0 )
-  ( 3 /SENSOR1 )
-  ( 4 GND )
-  ( 5 /I2C_DAT )
-  ( 6 /PIN6 )
-  ( 7 /I2C_CLK )
-  ( 8 VCC )
+ ( /50CD885F MODULE  U1 24AA1025 {Lib=24AA1025}
+  (    1 GND )
+  (    2 GND )
+  (    3 GND )
+  (    4 GND )
+  (    5 /I2C_DAT )
+  (    6 /I2C_CLK )
+  (    7 GND )
+  (    8 VCC )
  )
- ( /50CD8C7A HC-18UV X1 32.768_kHz
-  ( 1 N-000012 )
-  ( 2 N-000013 )
+ ( /50CD8855 MODULE  U2 DS1337 {Lib=DS1337}
+  (    1 N-000009 )
+  (    2 N-000010 )
+  (    3 /PIN6 )
+  (    4 GND )
+  (    5 /I2C_DAT )
+  (    6 /I2C_CLK )
+  (    7 ? )
+  (    8 VCC )
  )
 )
 *
 { Allowed footprints by component:
-$component C1
- SM*
- C?
- C1-1
-$endlist
-$component D1
- LED-3MM
- LED-5MM
- LED-10MM
- LED-0603
- LED-0805
- LED-1206
- LEDV
-$endlist
-$component R1
+$component R3
  R?
  SM0603
  SM0805
@@ -120,11 +106,25 @@ $component R2
  SM0805
  R?-*
 $endlist
-$component R3
+$component R1
  R?
  SM0603
  SM0805
  R?-*
+$endlist
+$component D1
+ LED-3MM
+ LED-5MM
+ LED-10MM
+ LED-0603
+ LED-0805
+ LED-1206
+ LEDV
+$endlist
+$component C1
+ SM*
+ C?
+ C1-1
 $endlist
 $component R4
  R?
@@ -134,3 +134,76 @@ $component R4
 $endlist
 $endfootprintlist
 }
+{ Pin List by Nets
+Net 1 "GND" "GND"
+ P1 2
+ R4 2
+ C1 1
+ U2 4
+ U1 7
+ U1 4
+ U1 2
+ U1 1
+ U3 4
+ U1 3
+ P2 2
+ P3 2
+ K1 2
+ K2 2
+Net 2 "VCC" "VCC"
+ C1 2
+ U2 8
+ R1 2
+ Q1 D
+ U3 8
+ P1 1
+ P2 1
+ U1 8
+Net 3 "/SENSOR0" "SENSOR0"
+ U3 2
+ K2 3
+Net 4 "/SENSOR1" "SENSOR1"
+ U3 3
+ K1 3
+Net 5 "/I2C_DAT" "I2C_DAT"
+ P1 4
+ U3 5
+ U1 5
+ U2 5
+ R3 2
+ P3 4
+Net 6 "/PIN6" "PIN6"
+ U3 6
+ U2 3
+ R1 1
+ Q1 G
+ P1 5
+Net 7 "/I2C_CLK" "I2C_CLK"
+ U3 7
+ P3 3
+ R2 2
+ U2 6
+ U1 6
+ P1 6
+Net 8 "/RST" "RST"
+ P1 3
+ U3 1
+Net 9 "" ""
+ U2 1
+ X1 1
+Net 10 "" ""
+ U2 2
+ X1 2
+Net 12 "" ""
+ D1 2
+ R4 1
+Net 13 "/Vsensor" "Vsensor"
+ K2 1
+ P3 1
+ Q1 S
+ D1 1
+ R3 1
+ R2 1
+ K1 1
+}
+#End

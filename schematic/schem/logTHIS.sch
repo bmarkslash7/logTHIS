@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Mon 24 Dec 2012 04:09:19 AM EST
+EESchema Schematic File Version 2  date Wed 26 Dec 2012 11:09:31 PM EST
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -40,7 +40,7 @@ $Descr A4 11700 8267
 encoding utf-8
 Sheet 1 1
 Title "logTHIS main board"
-Date "20 dec 2012"
+Date "27 dec 2012"
 Rev "1"
 Comp ""
 Comment1 ""
@@ -48,6 +48,18 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Label 6600 5550 0    60   ~ 0
+I2C_DAT
+Text Label 6600 3500 0    60   ~ 0
+I2C_DAT
+Text Label 6600 5450 0    60   ~ 0
+I2C_CLK
+Text Label 6600 3400 0    60   ~ 0
+I2C_CLK
+Text Label 1800 5300 0    60   ~ 0
+I2C_CLK
+Text Label 1800 5100 0    60   ~ 0
+I2C_DAT
 Connection ~ 8800 2350
 Wire Wire Line
 	8800 2250 8800 2350
@@ -273,10 +285,6 @@ F 1 "10k" V 1250 5200 50  0000 C CNN
 	1    1250 5200
 	0    1    1    0   
 $EndComp
-Text Label 1800 5300 0    60   ~ 0
-SCL
-Text Label 1800 5100 0    60   ~ 0
-SDA
 Text Label 1800 5000 0    60   ~ 0
 RST
 $Comp
@@ -297,10 +305,6 @@ F 1 "VCC" H 1250 4500 30  0000 C CNN
 	1    1250 4400
 	1    0    0    -1  
 $EndComp
-Text Label 6600 5550 0    60   ~ 0
-SDA
-Text Label 6600 5450 0    60   ~ 0
-SCL
 $Comp
 L VCC #PWR03
 U 1 1 50D16EA1
@@ -310,10 +314,6 @@ F 1 "VCC" H 6350 4900 30  0000 C CNN
 	1    6350 4800
 	1    0    0    -1  
 $EndComp
-Text Label 6600 3500 0    60   ~ 0
-SDA
-Text Label 6600 3400 0    60   ~ 0
-SCL
 Text Label 6700 1900 0    60   ~ 0
 I2C_DAT
 Text Label 6700 1800 0    60   ~ 0

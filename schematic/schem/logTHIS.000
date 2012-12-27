@@ -1,4 +1,4 @@
-PCBNEW-BOARD Version 1 date Mon 24 Dec 2012 04:09:36 AM EST
+PCBNEW-BOARD Version 1 date Mon 24 Dec 2012 04:09:56 AM EST
 
 # Created by Pcbnew(2011-05-25)-stable
 
@@ -20,9 +20,9 @@ $EndGENERAL
 
 $SHEETDESCR
 Sheet A4 11700 8267
-Title ""
+Title "logTHIS main board"
 Date "24 dec 2012"
-Rev ""
+Rev "1"
 Comp ""
 Comment1 ""
 Comment2 ""
