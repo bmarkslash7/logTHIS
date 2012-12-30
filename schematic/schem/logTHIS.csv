@@ -1,0 +1,16 @@
+"Id";"Designator";"Package";"Quantity";"Designation";"Supplier and ref";
+1;"Q1";"TO92DGS";1;"MOSFET_N";;;
+2;"P1";"SIL-6";1;"CONN_6";;;
+3;"P3";"SIL-4";1;"I2C_Sense";;;
+4;"K2";"SIL-3";1;"Sensor0";;;
+5;"K1";"SIL-3";1;"Sensor1";;;
+6;"P2";"SIL-2";1;"Battery";;;
+7;"D1";"LEDV";1;"LED";;;
+8;"U3";"DIP-8__300_ELL";1;"ATTINY85V";;;
+9;"U1";"DIP-8__300_ELL";1;"24AA1025";;;
+10;"U2";"DIP-8__300_ELL";1;"DS1337";;;
+11;"C1";"C1";1;".1mF";;;
+12;"R1";"R3";1;"10k";;;
+13;"R2,R3";"R3";2;"4.7k";;;
+14;"R4";"R3";1;"1k";;;
+15;"X1";"HC-18UV";1;"32.768_kHz";;;
