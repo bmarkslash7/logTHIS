@@ -16,7 +16,8 @@ I2C functions are from http://www.instructables.com/id/I2C_Bus_for_ATtiny_and_AT
 0------------------------------------------------
 
 The temperature and humidity sensor code is licensed under the GNU Lesser General Public License version 2.1.  
-We have a stripped down version of the code available at http://nethoncho.com/arduino/DHT22/
+We stripped down the code available at http://nethoncho.com/arduino/DHT22/
+
 From nethoncho.com:
   DHT22.cpp - DHT22 sensor library
   Developed by Ben Adams - 2011
