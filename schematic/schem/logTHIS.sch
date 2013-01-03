@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Wed 02 Jan 2013 11:50:17 PM EST
+EESchema Schematic File Version 2  date Thu 03 Jan 2013 12:28:26 AM EST
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -48,15 +48,12 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
-$Comp
-L VCC #PWR01
-U 1 1 50E4FC11
-P 3800 5100
-F 0 "#PWR01" H 3800 5200 30  0001 C CNN
-F 1 "VCC" H 3800 5200 30  0000 C CNN
-	1    3800 5100
-	1    0    0    -1  
-$EndComp
+Text Label 1650 6000 0    60   ~ 0
+PWR_JMP
+Wire Wire Line
+	1650 6000 1650 6350
+Wire Wire Line
+	1650 6350 1950 6350
 Wire Wire Line
 	3800 5100 3800 5450
 Wire Wire Line
@@ -250,6 +247,30 @@ Connection ~ 9050 2650
 Wire Wire Line
 	8800 2250 8800 2350
 Connection ~ 8800 2350
+Wire Wire Line
+	1950 6550 1450 6550
+Wire Wire Line
+	1450 6550 1450 6000
+Text Label 3800 5100 0    60   ~ 0
+PWR_JMP
+$Comp
+L VCC #PWR01
+U 1 1 50E515BE
+P 1450 6000
+F 0 "#PWR01" H 1450 6100 30  0001 C CNN
+F 1 "VCC" H 1450 6100 30  0000 C CNN
+	1    1450 6000
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_2 P4
+U 1 1 50E515A4
+P 2300 6450
+F 0 "P4" V 2250 6450 40  0000 C CNN
+F 1 "PWR_JMP" V 2350 6450 40  0000 C CNN
+	1    2300 6450
+	1    0    0    -1  
+$EndComp
 Text Label 6600 5550 0    60   ~ 0
 I2C_DAT
 Text Label 6600 3500 0    60   ~ 0
