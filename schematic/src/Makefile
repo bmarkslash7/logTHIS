@@ -21,7 +21,7 @@ MCU = attiny85
 # MCU = atmega8
 
 # Target file name (without extension).
-TARGET = blink
+TARGET = logTHIS
 
 # Programming hardware: type avrdude -c ?
 # to get a full listing.

@@ -1,15 +1,15 @@
-# EESchema Netlist Version 1.1 created  Fri 04 Jan 2013 01:15:29 AM EST
+# EESchema Netlist Version 1.1 created  Fri 01 Feb 2013 07:29:22 AM EST
 (
  ( /50E515A4 $noname  P4 PWR_JMP {Lib=CONN_2}
   (    1 /PWR_JMP )
   (    2 VCC )
  )
  ( /50D1744F $noname  R3 4.7k {Lib=R}
-  (    1 /Vsensor )
+  (    1 VCC )
   (    2 /I2C_DAT )
  )
  ( /50D17445 $noname  R2 4.7k {Lib=R}
-  (    1 /Vsensor )
+  (    1 VCC )
   (    2 /I2C_CLK )
  )
  ( /50D16F5C $noname  R1 10k {Lib=R}
@@ -41,9 +41,9 @@
   (    2 N-000010 )
  )
  ( /50CD8B00 $noname  Q1 MOSFET_N {Lib=MOSFET_N}
-  (    D VCC )
+  (    D /Vsensor )
   (    G /PIN6 )
-  (    S /Vsensor )
+  (    S VCC )
  )
  ( /50CD8AE8 $noname  D1 LED {Lib=LED}
   (    1 /Vsensor )
@@ -140,54 +140,54 @@ $endfootprintlist
 }
 { Pin List by Nets
 Net 1 "/Vsensor" "Vsensor"
- R3 1
- Q1 S
- R2 1
+ K1 1
+ Q1 D
  D1 1
  P3 1
- K1 1
  K2 1
 Net 2 "GND" "GND"
  C1 1
  R4 2
- U1 1
  U2 4
  U1 7
  U1 4
  P1 2
  U1 2
- P2 2
- P3 2
- K1 2
- K2 2
+ U1 1
  U3 4
-Net 3 "VCC" "VCC"
- R1 2
+ K2 2
+ K1 2
+ P3 2
+ P2 2
+Net 3 "/I2C_CLK" "I2C_CLK"
+ R2 2
+ P3 3
+ U3 7
+ U1 6
+ P1 6
+ U2 6
+Net 4 "VCC" "VCC"
+ R2 1
+ R3 1
  U3 8
  P4 2
  P2 1
+ U2 8
+ R1 2
  P1 1
  C1 2
- U2 8
- Q1 D
  U1 8
-Net 4 "/RST" "RST"
- U3 1
+ Q1 S
+Net 5 "/RST" "RST"
  P1 3
-Net 5 "/I2C_DAT" "I2C_DAT"
- P1 4
+ U3 1
+Net 6 "/I2C_DAT" "I2C_DAT"
  P3 4
- R3 2
- U2 5
+ P1 4
  U1 5
+ R3 2
  U3 5
-Net 6 "/I2C_CLK" "I2C_CLK"
- P1 6
- P3 3
- U3 7
- U2 6
- U1 6
- R2 2
+ U2 5
 Net 7 "/SENSOR0" "SENSOR0"
  K2 3
  U3 2
@@ -202,15 +202,15 @@ Net 10 "" ""
  X1 2
 Net 11 "/PIN6" "PIN6"
  R1 1
- Q1 G
  U3 6
- P1 5
  U2 3
+ P1 5
+ Q1 G
 Net 13 "" ""
- D1 2
  R4 1
+ D1 2
 Net 14 "/PWR_JMP" "PWR_JMP"
- U1 3
  P4 1
+ U1 3
 }
 #End

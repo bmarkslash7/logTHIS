@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fri 04 Jan 2013 09:27:44 AM EST
+EESchema Schematic File Version 2  date Fri 01 Feb 2013 07:29:23 AM EST
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -40,7 +40,7 @@ $Descr A4 11700 8267
 encoding utf-8
 Sheet 1 1
 Title "logTHIS main board"
-Date "4 jan 2013"
+Date "1 feb 2013"
 Rev "1"
 Comp ""
 Comment1 ""
@@ -48,6 +48,26 @@ Comment2 ""
 Comment3 ""
 Comment4 ""
 $EndDescr
+Text Label 9450 1500 0    60   ~ 0
+Vsensor
+Wire Wire Line
+	9450 1500 9450 1900
+Wire Wire Line
+	9450 1900 9850 1900
+Connection ~ 6150 950 
+Wire Wire Line
+	6150 950  6500 950 
+Connection ~ 6500 1700
+Wire Wire Line
+	6500 1700 6500 1450
+Wire Wire Line
+	7100 1800 6150 1800
+Wire Wire Line
+	6350 2100 6350 1600
+Wire Wire Line
+	6350 1600 6150 1600
+Wire Wire Line
+	1250 2250 1250 2000
 Wire Wire Line
 	1600 4850 2000 4850
 Wire Wire Line
@@ -57,19 +77,8 @@ Wire Wire Line
 	2350 5650 2350 6200
 Wire Wire Line
 	2350 6200 2850 6200
-Connection ~ 8800 2350
 Wire Wire Line
-	8800 2250 8800 2350
-Connection ~ 9050 2650
-Wire Wire Line
-	9050 2250 9050 2650
-Connection ~ 9450 1600
-Wire Wire Line
-	9450 1600 8800 1600
-Wire Wire Line
-	8800 1600 8800 1750
-Wire Wire Line
-	1150 2650 750  2650
+	1250 2000 1650 2000
 Wire Wire Line
 	1050 5300 1300 5300
 Wire Wire Line
@@ -80,13 +89,6 @@ Wire Wire Line
 	6100 5450 6600 5450
 Wire Wire Line
 	6150 3500 6600 3500
-Connection ~ 6150 1100
-Wire Wire Line
-	6550 1100 6150 1100
-Wire Wire Line
-	6150 1900 6700 1900
-Wire Wire Line
-	6150 1700 6700 1700
 Wire Wire Line
 	4450 1700 3850 1700
 Wire Wire Line
@@ -130,8 +132,6 @@ Wire Wire Line
 Wire Wire Line
 	2750 3550 2500 3550
 Wire Wire Line
-	1450 3100 1450 2850
-Wire Wire Line
 	4450 3400 4250 3400
 Wire Wire Line
 	4100 5800 4100 5250
@@ -172,7 +172,7 @@ Wire Wire Line
 Wire Wire Line
 	1450 3550 2000 3550
 Wire Wire Line
-	1450 2450 1450 1950
+	800  2050 800  2550
 Wire Wire Line
 	2325 1075 1925 1075
 Wire Wire Line
@@ -195,10 +195,6 @@ Wire Wire Line
 Wire Wire Line
 	9300 3650 9900 3650
 Wire Wire Line
-	9850 1900 9450 1900
-Wire Wire Line
-	9450 1900 9450 1550
-Wire Wire Line
 	9850 2100 9600 2100
 Wire Wire Line
 	9600 2100 9600 2350
@@ -208,12 +204,6 @@ Wire Wire Line
 	4450 1600 3850 1600
 Wire Wire Line
 	4450 1800 3850 1800
-Wire Wire Line
-	6150 1800 6700 1800
-Wire Wire Line
-	6950 1100 7150 1100
-Wire Wire Line
-	7150 1100 7150 1250
 Wire Wire Line
 	6150 3400 6600 3400
 Wire Wire Line
@@ -238,9 +228,6 @@ Wire Wire Line
 Wire Wire Line
 	4250 3850 3700 3850
 Wire Wire Line
-	9450 1750 9050 1750
-Connection ~ 9450 1750
-Wire Wire Line
 	4400 5450 3800 5450
 Wire Wire Line
 	3800 5450 3800 5100
@@ -250,6 +237,24 @@ Wire Wire Line
 	2550 6000 2550 5650
 Wire Wire Line
 	1300 5300 1300 4950
+Wire Wire Line
+	1450 2550 1450 3100
+Wire Wire Line
+	800  2550 1050 2550
+Wire Wire Line
+	6350 2650 6350 2500
+Wire Wire Line
+	7100 1700 6150 1700
+Wire Wire Line
+	7100 1900 6150 1900
+Wire Wire Line
+	6750 1450 6750 1900
+Connection ~ 6750 1900
+Wire Wire Line
+	6150 850  6750 850 
+Connection ~ 6150 850 
+Wire Wire Line
+	6750 850  6750 950 
 Text Label 2550 5650 0    60   ~ 0
 PWR_JMP
 Text Label 3800 5100 0    60   ~ 0
@@ -287,24 +292,24 @@ I2C_DAT
 $Comp
 L R R3
 U 1 1 50D1744F
-P 9050 2000
-F 0 "R3" V 9130 2000 50  0000 C CNN
-F 1 "4.7k" V 9050 2000 50  0000 C CNN
-	1    9050 2000
+P 6750 1200
+F 0 "R3" V 6830 1200 50  0000 C CNN
+F 1 "4.7k" V 6750 1200 50  0000 C CNN
+	1    6750 1200
 	1    0    0    -1  
 $EndComp
 $Comp
 L R R2
 U 1 1 50D17445
-P 8800 2000
-F 0 "R2" V 8880 2000 50  0000 C CNN
-F 1 "4.7k" V 8800 2000 50  0000 C CNN
-	1    8800 2000
+P 6500 1200
+F 0 "R2" V 6580 1200 50  0000 C CNN
+F 1 "4.7k" V 6500 1200 50  0000 C CNN
+	1    6500 1200
 	1    0    0    -1  
 $EndComp
 Text Label 3700 3850 0    60   ~ 0
 PIN6
-Text Label 750  2650 0    60   ~ 0
+Text Label 1650 2000 2    60   ~ 0
 PIN6
 Text Label 1050 5300 0    60   ~ 0
 PIN6
@@ -346,11 +351,11 @@ F 1 "VCC" H 6350 4900 30  0000 C CNN
 	1    6350 4800
 	1    0    0    -1  
 $EndComp
-Text Label 6700 1900 0    60   ~ 0
+Text Label 7100 1900 0    60   ~ 0
 I2C_DAT
-Text Label 6700 1800 0    60   ~ 0
+Text Label 7100 1800 0    60   ~ 0
 PIN6
-Text Label 6700 1700 0    60   ~ 0
+Text Label 7100 1700 0    60   ~ 0
 I2C_CLK
 Text Label 3850 1800 0    60   ~ 0
 SENSOR1
@@ -366,8 +371,6 @@ Text Label 8150 2650 0    60   ~ 0
 I2C_DAT
 Text Label 8150 2350 0    60   ~ 0
 I2C_CLK
-Text Label 9450 1550 0    60   ~ 0
-Vsensor
 Text Label 9250 5250 0    60   ~ 0
 Vsensor
 Text Label 9300 3400 0    60   ~ 0
@@ -485,10 +488,10 @@ $EndComp
 $Comp
 L VCC #PWR013
 U 1 1 50CD9099
-P 1450 1950
-F 0 "#PWR013" H 1450 2050 30  0001 C CNN
-F 1 "VCC" H 1450 2050 30  0000 C CNN
-	1    1450 1950
+P 800 2050
+F 0 "#PWR013" H 800 2150 30  0001 C CNN
+F 1 "VCC" H 800 2150 30  0000 C CNN
+	1    800  2050
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -504,10 +507,10 @@ NoConn ~ 6150 3300
 $Comp
 L GND #PWR015
 U 1 1 50CD8D7D
-P 7150 1250
-F 0 "#PWR015" H 7150 1250 30  0001 C CNN
-F 1 "GND" H 7150 1180 30  0001 C CNN
-	1    7150 1250
+P 6350 2650
+F 0 "#PWR015" H 6350 2650 30  0001 C CNN
+F 1 "GND" H 6350 2580 30  0001 C CNN
+	1    6350 2650
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -567,11 +570,11 @@ $EndComp
 $Comp
 L MOSFET_N Q1
 U 1 1 50CD8B00
-P 1350 2650
-F 0 "Q1" H 1360 2820 60  0000 R CNN
-F 1 "MOSFET_N" H 1360 2500 60  0000 R CNN
-	1    1350 2650
-	1    0    0    -1  
+P 1250 2450
+F 0 "Q1" H 1260 2620 60  0000 R CNN
+F 1 "MOSFET_N" H 1260 2300 60  0000 R CNN
+	1    1250 2450
+	0    1    1    0   
 $EndComp
 $Comp
 L LED D1
@@ -585,11 +588,11 @@ $EndComp
 $Comp
 L C C1
 U 1 1 50CD8A2C
-P 6750 1100
-F 0 "C1" H 6800 1200 50  0000 L CNN
-F 1 ".1mF" H 6800 1000 50  0000 L CNN
-	1    6750 1100
-	0    1    1    0   
+P 6350 2300
+F 0 "C1" H 6400 2400 50  0000 L CNN
+F 1 ".1mF" H 6400 2200 50  0000 L CNN
+	1    6350 2300
+	-1   0    0    1   
 $EndComp
 $Comp
 L R R4
