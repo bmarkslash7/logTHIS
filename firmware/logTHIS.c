@@ -6,13 +6,86 @@ Read from Humidity sensor (keep trying a couple of times if initial fails
 Read from Light sensor - convert cap sensor to ADC
 Write data to EEPROM
 Put AVR to sleep
- * Author: christopher stieha
- * Filename: blink.c
+ * Author: christopher stieha and abram connelly
+ * Filename: logTHIS.c
  * Chip: ATtiny85
 
 I2c code from http://www.instructables.com/id/I2C_Bus_for_ATtiny_and_ATmega/ user doctek
 HUMIDITY code modified from https://github.com/nethoncho/Arduino-DHT22 user nethoncho
  */
+
+
+/* logTHIS will look at the header in bank 0 of the EEPROM to determine
+ * the logging policy (wraparound, stop at full, etc.), the frequency (1 minute,
+ * 10 minute, 15 minute etc.) and the number of address pointers once at 
+ * bootup.  
+ *
+ * It will then write an information record to the EEPROM with the policy, frequency and 
+ * it's version number.
+ *
+ * It will then write an information record for each of the temperature, humidity
+ * and PAR to the EEPROM.
+ *
+ * It will get the date from the RTC and then write a datestamp record to EEPROM.
+ *
+ * After meta information has been read, it will then look at the logging address
+ * pointers to pick the latest (*) logging pointer position.
+ *
+ * At each each logging event, it will write a loggin record to the EEPROM.  It will then
+ * write update the next logging address pointer in the logging address pointer list.
+ *
+ * The latest logging address pointer is taken with the understanding that wraparound
+ * can occur.
+ *
+ *
+ *
+ * header format:
+ *
+ *        policy : frequency |   version   |   version   |   reserved  
+ *      -----------------------------------------------------------------
+ * bits |   4         4      |     8       |      8      |     5*8 = 40 |
+ *      -----------------------------------------------------------------
+ *
+ *      total bytes: 8
+ *
+ * ***********************************
+ *
+ * log address pointer format:
+ *       
+ *        sequence | bank | address high | address low
+ *      -----------------------------------------------
+ * bits |    8     |  8   |      8       |     8      |
+ *      -----------------------------------------------
+ *
+ *      total bytes: 4
+ *
+ * ***********************************
+ * 
+ * record format:
+ *
+ *         record type : record length |  data
+ *      -----------------------------------------
+ * bits |       4              4       |  0-16  |
+ *      -----------------------------------------
+ *
+ *      total bytes: variable (1 to 17)
+ *
+ *      record length signifies the number of bytes of data in the record
+ *
+ * record type  | record value  | description
+ * -------------------------------------------
+ *  Information |      0        | holds header informat or which field
+ *              |               | in a data record belongs to which sensor
+ * -------------------------------------------
+ *  Datestamp   |      1        | records date from RTC
+ * -------------------------------------------
+ *  Data        |      2        | holds data from sensors
+ * -------------------------------------------
+ *  Event       |      3        | holds miscellaneous event information (unused for now)
+ * -------------------------------------------
+ *
+ */
+
 
 #define F_CPU 1000000
 #include <avr/io.h>
@@ -28,22 +101,18 @@ HUMIDITY code modified from https://github.com/nethoncho/Arduino-DHT22 user neth
 #define PAR_SENSOR 3
 #define HUMIDITY 4
 #define HUMIDITY_CLOCK_TIME 6       // number compared to timing of humidity sensors to determine 0 or 1
-// changes with the speed of the processor
-#define DISPLAY_LED 4
 
 // EEPROM definitions
-//#define MEMORY_ADDR  0b1010000    // 32kb EEPROM
-#define MEMORY_ADDR0  0b1010000    // 1M, first bank EEPROM
-#define MEMORY_ADDR1  0b1011000    // 1M, second bank EEPROM
+#define EEPROM_I2C_ADDR0  0b1010000    // 1M, first bank EEPROM
+#define EEPROM_I2C_ADDR1  0b1011000    // 1M, second bank EEPROM
 
-#define MESSAGEBUF_SIZE       9
+#define EEPROM_BANK_SIZE 62500          // in bytes
+
+#define I2C_DELAY_MS 50
 
 // RTC definitions
-#define RTC_ADDR 0b1101000    // function needs to <<1 and add R/W bit
+#define RTC_I2C_ADDR 0b1101000    // function needs to <<1 and add R/W bit
 
-#define HOW_OFTEN 0
-//#define HOW_OFTEN 2         // 0 is every minute, 1 is once an hour, 2 is twice an hour, 
-// 4 is 4 times and hour, 6 is 6 times an hour
 
 #define DHT22_ERROR_VALUE -99.5
 
@@ -59,72 +128,189 @@ uint16_t readPAR_SensorADC (int pinPAR_SENSOR);
 uint16_t readPAR_SensorCAPADC (int pinPAR_SENSOR);
 int set_RTC_bit (uint8_t device, uint8_t address, uint8_t bit, uint8_t value);
 
+void setup_boot_information(void);
+void setup_eeprom_address_vars(void);
+void setup_default(void);
+void update_eeprom_address_pointers(void);
+void update_eeprom_counters(uint8_t chunk);
+
+void write_eeprom(uint16_t);
+void write_eeprom_2(uint8_t, uint8_t);
+void write_eeprom_1(uint8_t byt);
+void read_eeprom(uint8_t *, uint8_t );
+
+void write_record( uint8_t record_type, uint8_t record_len, uint8_t *buf);
+
+#define HEADER_SIZE 8
+#define ADDRESS_POINTER_SIZE 4
+
+#define RECORD_INFO  ( 0 << 4 )
+#define RECORD_DATE  ( 1 << 4 )
+#define RECORD_DATA  ( 2 << 4 )
+#define RECORD_EVENT ( 3 << 4 )
+
+enum{
+  LOG_FREQ_1M = 0,
+  LOG_FREQ_10M ,
+  LOG_FREQ_15M ,
+  LOG_FREQ_30M ,
+  LOG_FREQ_1H 
+};
+
+
+enum {
+  EEPROM_POLICY_STOP = 0,
+  EEPROM_POLICY_WRAP
+};
+
+typedef struct logTHIS_state_type
+{
+  uint8_t header[HEADER_SIZE];
+  uint8_t eeprom_policy;
+  uint8_t log_frequency;
+
+  uint8_t n_address_pointer;
+  uint8_t address_pointer_seq;
+  uint8_t address_pointer_pos;
+  uint8_t eeprom_i2c_address;
+  uint16_t eeprom_mem_address;
+  uint8_t eeprom_full;
+
+  uint8_t default_init;
+
+} logTHIS_state_t;
+
+logTHIS_state_t state = { {0} };
+
+
+// defaults
+#define DEFAULT_N_ADDRESS 8
+#define DEFAULT_FREQ  LOG_FREQ_30M
+#define DEFAULT_EEPROM EEPROM_I2C_ADDR0
+#define DEFAULT_EEPROM_POLICY EEPROM_POLICY_STOP
+
+
+// temporary, should just go to sleep and never wake up
+// if we've gotten to a log full (without wraparound) state.
+//
+void log_full_state(void)
+{
+  for (;;)
+  {
+  }
+}
+
+void blink_always(void)
+{
+  set_DDRB_bit(1,1);
+  for (;;)
+  {
+    set_PORTB_bit(1,1);  // sets B0 as high
+    _delay_ms(100);
+    set_PORTB_bit(1,0); // sets B0 as low
+    _delay_ms(100);
+  }
+  set_DDRB_bit(1,0);
+}
+
 
 // ------------------HERE STARTS MAIN ----------------------------------------------
 int main (void)
 {
+    // initialize variables
+    int i;
+    int16_t currentHumidity;
+    int16_t currentTemperature;
+
     // configure sleep state and interrupt pin
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
-
-    // ????
-    // blink on and off to say it is on and working
-    set_DDRB_bit(6,1);
-    // Blink DISPLAY_LED on and off to show that it has started
-    int blinki;
-    for (blinki = 0; blinki<10; blinki++)
-    {
-        set_PORTB_bit(6,1);  // sets B0 as high
-        _delay_ms(200);
-        set_PORTB_bit(6,0); // sets B0 as low
-        _delay_ms(200);
-    }
-    set_DDRB_bit(6,0);
-    // ????
 
     // -------------------------------------------
 
     GIMSK |= (1 << 5);  // enable interrupts
     PCMSK |= (1 << 1);  // set Pin6/PB1/PCINT1 as interupt pin
-    // currently same as DISPLAY_LED
+
 
     // initialize pins
     USI_TWI_Master_Initialise();
     set_DDRB_bit(PAR_SENSOR,1);
     set_DDRB_bit(HUMIDITY,1);
-    set_DDRB_bit(DISPLAY_LED,1);
 
-    // initialize variables
-    uint16_t externaleepromcounter = 0;
-    int i;
+    //_delay_ms(10000);
 
-    int16_t currentHumidity;
-    int16_t currentTemperature;
 
-    _delay_ms(10000);
+    //************* DEBUG *****************
+    //  setup_default();
+    //************* DEBUG *****************
 
     // write internalEEPROM to 0 to represent 0 bank of externalEEPROM
     // TODO: THIS MAY NOT BE THE PLACE TO DO THIS, AS IF BATTERY RESET, THEN OVERWRITES DATA
-    eeprom_write_byte( (uint8_t*) 1, 0);
+    //eeprom_write_byte( (uint8_t*) 1, 0);
+
+    //-------------------------------
+    // SETUP on boot
+    //
+    state.eeprom_i2c_address = EEPROM_I2C_ADDR0;
+    state.eeprom_full = 0;
+    state.default_init = 0;
+    setup_boot_information();
+    setup_eeprom_address_vars();
+
+    // in case we have factory eeprom
+    // store some default values, re-read
+    if (state.default_init)
+    {
+      setup_default();
+      setup_boot_information();
+      setup_eeprom_address_vars();
+    }
+
+
+    // write header event
+    write_record( RECORD_EVENT, 4, (uint8_t *)"boot");
+    write_record( RECORD_INFO, 5, (uint8_t *)("\0" "Temp") );
+    write_record( RECORD_INFO, 4, (uint8_t *)("\1" "Hum") );
+    write_record( RECORD_INFO, 4, (uint8_t *)("\2" "PAR") );
+
+
+    // write header event
+    update_eeprom_counters(6);
+    if (state.eeprom_full) log_full_state();
+    write_eeprom_1( RECORD_INFO | 5 );
+    write_eeprom_1( (state.eeprom_policy << 4) | (state.log_frequency) );
+    write_eeprom_1( state.n_address_pointer );
+    write_eeprom_1( state.eeprom_i2c_address );
+    write_eeprom( state.eeprom_mem_address );
+
+    // read RTC time and write date record
+    // placeholder for now
+    write_record( RECORD_DATE, 12, (uint8_t *)"199912315959" );
+    update_eeprom_address_pointers();
+
+
+    //*************************************************
+    // DEBUG!!
+    //log_full_state();
+    //blink_always();
+
+    sleep_enable();
+    sei();
+    sleep_cpu();
+    sleep_disable();
+    blink_always();
+
+    //*************************************************
+
+    //-------------------------------
+
 
     // write alarm to RTC for once per minute
-    set_RTC_bit(RTC_ADDR, 0x0E, 1, 1);    // set A1IE bit to 1, enable alarm
+    set_RTC_bit(RTC_I2C_ADDR, 0x0E, 1, 1);    // set A1IE bit to 1, enable alarm
 
     // tells alarm to activate every minute on the 00 second mark
-    set_RTC_bit(RTC_ADDR, 0x0D, 7, 1);  // set A2M4 bit to 1,
-    set_RTC_bit(RTC_ADDR, 0x0C, 7, 1);  // set A2M3 bit to 1
-    set_RTC_bit(RTC_ADDR, 0x0B, 7, 1);  // set A2M2 bit to 1
-
-
-    // TODO: write initial time to beginning of externalEEPROM
-
-    // Begin while loop that will stop when externalEEPROM is full
-    //  EEPROM is full when both banks of 512kbits filled
-    uint16_t basici;  // need to decide maximum number of measurements (128000 bytes/ info)
-
-    // when 6 bytes of data, max points is 21333
-    // when 8 bytes data, (sensors + hour + minute), max points is 16000
-    uint16_t maxdata = 500;   // magic number, be careful
-
+    set_RTC_bit(RTC_I2C_ADDR, 0x0D, 7, 1);  // set A2M4 bit to 1,
+    set_RTC_bit(RTC_I2C_ADDR, 0x0C, 7, 1);  // set A2M3 bit to 1
+    set_RTC_bit(RTC_I2C_ADDR, 0x0B, 7, 1);  // set A2M2 bit to 1
 
     // ******************************************************************
     // ------ BEGINNING OF LOOP THAT GOES AROUND AND AROUND -------------
@@ -143,44 +329,48 @@ int main (void)
 
         uint8_t messageBuf[3];
         uint8_t timeBuf[3];
-        messageBuf[0] = (RTC_ADDR << 1) | (0);   // tell clock you are going to read it + W
+        messageBuf[0] = (RTC_I2C_ADDR << 1) | (0);   // tell clock you are going to read it + W
         messageBuf[1] = 0x01;       // write to clock where you want to read - minutes
-        timeBuf[0] = (RTC_ADDR << 1) | (1);  // tell clock you are going to read it + R
+        timeBuf[0] = (RTC_I2C_ADDR << 1) | (1);  // tell clock you are going to read it + R
         timeBuf[1] = 0xBE;
         timeBuf[2] = 0xEF;
 
         temp = USI_TWI_Start_Read_Write(messageBuf, 2);
+        _delay_ms(I2C_DELAY_MS);
+
         temp = USI_TWI_Start_Read_Write(timeBuf, 2);
+        _delay_ms(I2C_DELAY_MS);
+
         uint8_t minutes = timeBuf[1];    // saves minutes for later use
         uint8_t hours = 0;
 
 
 
         // compare minute to determine if measurement needs to be taken
-
+        // minute time in BCD
         int measurement_is_needed = 0;
-        if   (HOW_OFTEN == 0)
+        if   (state.log_frequency == LOG_FREQ_1M )
             measurement_is_needed = 1;
-        if ( (HOW_OFTEN == 1) &&
-                (minutes == 0) )
-            measurement_is_needed = 1;
-        if ( (HOW_OFTEN == 2) &&
-                ( (minutes == 0) ||
-                  (minutes == 0x30) ) )
-            measurement_is_needed = 1;
-        if ( ( HOW_OFTEN == 4) &&
-                ( (minutes == 0) ||
-                  (minutes == 0x30) ||
-                  (minutes == 0x15) ||
-                  (minutes == 0x45) ) )
-            measurement_is_needed = 1;
-        if ( (HOW_OFTEN == 6) &&
+        if ( (state.log_frequency == LOG_FREQ_10M ) &&
                 ( (minutes==0) ||
                   (minutes==0x10) ||
                   (minutes==0x20) ||
                   (minutes==0x30) ||
                   (minutes==0x40) ||
                   (minutes==0x50) ) )
+            measurement_is_needed = 1;
+        if ( (state.log_frequency == LOG_FREQ_15M ) &&
+                ( (minutes == 0) ||
+                  (minutes == 0x15) ||
+                  (minutes == 0x30) ||
+                  (minutes == 0x45) ) )
+            measurement_is_needed = 1;
+        if ( (state.log_frequency == LOG_FREQ_30M ) &&
+                ( (minutes == 0) ||
+                  (minutes == 0x30) ) )
+            measurement_is_needed = 1;
+        if ( (state.log_frequency == LOG_FREQ_1H ) &&
+                (minutes == 0) )
             measurement_is_needed = 1;
 
 
@@ -192,14 +382,18 @@ int main (void)
         {
             // Need to first collect hour measurements
             // only done if measurement is needed!
-            messageBuf[0] = (RTC_ADDR << 1) | (0);   // tell clock you are going to read it + W
+            messageBuf[0] = (RTC_I2C_ADDR << 1) | (0);   // tell clock you are going to read it + W
             messageBuf[1] = 0x02;       // write to clock where you want to read - hours
-            timeBuf[0] = (RTC_ADDR << 1) | (1);  // tell clock you are going to read it + R
+            timeBuf[0] = (RTC_I2C_ADDR << 1) | (1);  // tell clock you are going to read it + R
             timeBuf[1] = 0xBE;
             timeBuf[2] = 0xEF;
 
             temp = USI_TWI_Start_Read_Write(messageBuf, 2);
+            _delay_ms(I2C_DELAY_MS);
+
             temp = USI_TWI_Start_Read_Write(timeBuf, 2);
+            _delay_ms(I2C_DELAY_MS);
+
             hours = timeBuf[1];
 
             // take light measurements - Capacitive Sensing
@@ -401,74 +595,48 @@ int main (void)
             } // end while loop (humiditytemperaturecheck == 0)
 
 
-            // TODO: write to EEPROM
+            /*
+            update_eeprom_counters(2);
+            if (!state.eeprom_full)
+              write_eeprom_2(minutes, hours);
+              */
 
-            uint8_t messageBuf[MESSAGEBUF_SIZE];
-            uint8_t eeprom_bank = MEMORY_ADDR0;
-            // THIS CODE IS FOR 32k EEPROM
-            // TODO: UPDATE TO 1024k EEPROM
+            /*
+            update_eeprom_counters(2);
+            if (!state.eeprom_full)
+              write_eeprom(PARdata);
+              */
 
-            // TODO: ADD IN SOME TIME COMPONENT
-            messageBuf[0] = (eeprom_bank<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT);
-            messageBuf[1] = (externaleepromcounter>>8) & 0b00001111;         // location to be written 4 high bits
-            messageBuf[2] = (externaleepromcounter & 0b11111111);    // location to be written, 8 low bits
-            messageBuf[3] = minutes;          // MAYBE PUT HOURS HERE
-            messageBuf[4] = hours;          // write minutes
-            externaleepromcounter += 2;
-            temp = USI_TWI_Start_Read_Write( messageBuf, 5);
-            _delay_ms(50);
+            /*
+            update_eeprom_counters(2);
+            if (!state.eeprom_full)
+              write_eeprom(PARdataCAPADC);
+              */
 
-            messageBuf[0] = (eeprom_bank<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT);
-            messageBuf[1] = (externaleepromcounter>>8) & 0b00001111;         // location to be written 4 high bits
-            messageBuf[2] = (externaleepromcounter & 0b11111111);    // location to be written, 8 low bits
-            messageBuf[3] = (PARdata>>8) & 0b11111111;      // 8 bits of data high PAR
-            messageBuf[4] = (PARdata & 0b11111111);        // 8 bits of data low PAR
-            externaleepromcounter += 2;
-            temp = USI_TWI_Start_Read_Write( messageBuf, 5);
-            _delay_ms(50);
+            update_eeprom_counters(5);
+            if (!state.eeprom_full)
+              write_eeprom_1( RECORD_DATA | 4 );
 
-            messageBuf[0] = (eeprom_bank<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT);
-            messageBuf[1] = (externaleepromcounter>>8) & 0b00001111;         // location to be written 4 high bits
-            messageBuf[2] = (externaleepromcounter & 0b11111111);    // location to be written, 8 low bits
-            messageBuf[3] = (PARdataCAPADC>>8) & 0b11111111;      // 8 bits of data high PAR
-            messageBuf[4] = (PARdataCAPADC & 0b11111111);        // 8 bits of data low PAR
-            externaleepromcounter += 2;
-            temp = USI_TWI_Start_Read_Write( messageBuf, 5);
-            _delay_ms(50);
+            if (!state.eeprom_full)
+              write_eeprom(currentTemperature);
 
-            messageBuf[0] = (eeprom_bank<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT);
-            messageBuf[1] = (externaleepromcounter>>8) & 0b00001111;         // location to be written 4 high bits
-            messageBuf[2] = (externaleepromcounter & 0b11111111);    // location to be written, 8 low bits
-            messageBuf[3] = (currentTemperature>>8) & 0b11111111;    // 8 bits high TEMP
-            messageBuf[4] = (currentTemperature & 0b11111111);    // 8 bits low TEMP
-            externaleepromcounter += 2;
-            temp = USI_TWI_Start_Read_Write( messageBuf, 5);
-            _delay_ms(50);
-
-            messageBuf[0] = (eeprom_bank<<TWI_ADR_BITS) | (FALSE<<TWI_READ_BIT);
-            messageBuf[1] = (externaleepromcounter>>8) & 0b00001111;         // location to be written 4 high bits
-            messageBuf[2] = (externaleepromcounter & 0b11111111);    // location to be written, 8 low bits
-            messageBuf[3] = (currentHumidity>>8) & 0b11111111;    // 8 bits low HUMIDITY
-            messageBuf[4] = (currentHumidity & 0b11111111);      // 8 bits low HUMIDITY
-            externaleepromcounter += 2;
-            temp = USI_TWI_Start_Read_Write( messageBuf, 5);
-            _delay_ms(50);
+            if (!state.eeprom_full)
+              write_eeprom(currentHumidity);
 
         } // end of if (MEASUREMENT IS NEEDED)
 
         // turn off alarm on RTC
-        set_RTC_bit(RTC_ADDR, 0x0F, 1, 0);  // turn off A1F alarm
+        set_RTC_bit(RTC_I2C_ADDR, 0x0F, 1, 0);  // turn off A1F alarm
 
 
         // put to sleep
-
         sleep_enable();
         sei();
         sleep_cpu();
         sleep_disable();
 
 
-    }   // end for (basici=0; basici < (maxdata-6); basici++)
+    }
 
     return 0;
 } 
@@ -495,8 +663,10 @@ int set_RTC_bit (uint8_t device, uint8_t address, uint8_t bit, uint8_t value)
     tempBuf[1] = 0xFF;
 
     temp = USI_TWI_Start_Read_Write(clockBuf, 2);
-    temp = USI_TWI_Start_Read_Write(tempBuf, 2);
+    _delay_ms(I2C_DELAY_MS);
 
+    temp = USI_TWI_Start_Read_Write(tempBuf, 2);
+    _delay_ms(I2C_DELAY_MS);
 
     if (value == 0) {
         tempBuf[1] &= ~(1<<bit);
@@ -507,13 +677,13 @@ int set_RTC_bit (uint8_t device, uint8_t address, uint8_t bit, uint8_t value)
     clockBuf[2] = tempBuf[1];
 
     temp = USI_TWI_Start_Read_Write(clockBuf, 3);
+    _delay_ms(I2C_DELAY_MS);
 
     return 1;
 }
 
 uint16_t readPAR_SensorADC (int pinPAR_SENSOR)
 {
-    int i;
 
     // For PAR reading, we are going to take ten quick readings and then average
     // this is based of capacitance sensing
@@ -536,8 +706,6 @@ uint16_t readPAR_SensorADC (int pinPAR_SENSOR)
     ADMUX |= (PAR_SENSOR & 0b0010);
     ADMUX |= (PAR_SENSOR & 0b0001);
 
-    uint16_t tempADCL = 0;//(uint16_t) ADCL;
-    uint16_t tempADCH = 0;//(uint16_t) ADCH;
     uint16_t PARdata = 0;
     uint16_t PARdatafinal= 0;
 
@@ -584,7 +752,7 @@ uint16_t readPAR_SensorADC (int pinPAR_SENSOR)
             while (ADCSRA & (1<<ADSC));
             PARdata = (ADCL) | (ADCH<<8);
         }
-        _delay_ms(5);
+        _delay_ms(I2C_DELAY_MS);
 
         ADCSRA |= (1<<ADSC);
         while (ADCSRA & (1<<ADSC));
@@ -689,10 +857,7 @@ uint16_t readPAR_SensorCAPADC (int pinPAR_SENSOR)
     ADMUX |= (PAR_SENSOR & 0b0010);
     ADMUX |= (PAR_SENSOR & 0b0001);
 
-    uint16_t tempADCL = 0;//(uint16_t) ADCL;
-    uint16_t tempADCH = 0;//(uint16_t) ADCH;
     uint16_t PARdata = 0;
-    uint16_t PARdatafinal= 0;
 
     for (i =0; i<10; i++) 
     {
@@ -753,4 +918,279 @@ uint16_t readPAR_SensorCAPADC (int pinPAR_SENSOR)
     PARaverage = (PARaverage/10);
     returnPARdata = (uint16_t) PARaverage;
     return(returnPARdata);
+}
+
+void update_eeprom_counters(uint8_t chunk) 
+{
+
+  if ( (state.eeprom_mem_address + chunk) > EEPROM_BANK_SIZE )
+  {
+
+    // wrap around
+    if      ( (state.eeprom_policy == EEPROM_POLICY_WRAP) &&
+              (state.eeprom_i2c_address == EEPROM_I2C_ADDR1) )
+    {
+      state.eeprom_i2c_address = EEPROM_I2C_ADDR0;
+    }
+
+    // signal stop
+    else if ( (state.eeprom_policy == EEPROM_POLICY_STOP) &&
+              (state.eeprom_i2c_address == EEPROM_I2C_ADDR1) )
+    {
+      state.eeprom_full = 1;
+    }
+
+    // otherwise advance to next bank
+    else
+    {
+      state.eeprom_i2c_address = EEPROM_I2C_ADDR1;
+      state.eeprom_mem_address = 0;
+    }
+
+  }
+
+}
+
+
+void write_eeprom_1(uint8_t byt)
+{
+  uint8_t messageBuf[6];
+
+  messageBuf[0] = (state.eeprom_i2c_address << TWI_ADR_BITS) ;
+  messageBuf[1] = (state.eeprom_mem_address >> 8) & 0xff;
+  messageBuf[2] = state.eeprom_mem_address & 0xff;
+  messageBuf[3] = byt;
+  state.eeprom_mem_address += 1;
+  USI_TWI_Start_Read_Write( messageBuf, 4);
+  _delay_ms(I2C_DELAY_MS);
+
+}
+
+void write_eeprom_2(uint8_t byt0, uint8_t byt1)
+{
+  uint8_t messageBuf[6];
+
+  messageBuf[0] = (state.eeprom_i2c_address << TWI_ADR_BITS) ;
+  messageBuf[1] = (state.eeprom_mem_address >> 8) & 0xff;
+  messageBuf[2] = state.eeprom_mem_address & 0xff;
+  messageBuf[3] = byt0;
+  messageBuf[4] = byt1;
+  state.eeprom_mem_address += 2;
+  USI_TWI_Start_Read_Write( messageBuf, 5);
+  _delay_ms(I2C_DELAY_MS);
+
+}
+
+void write_eeprom(uint16_t word)
+{
+  uint8_t messageBuf[6];
+
+  messageBuf[0] = (state.eeprom_i2c_address << TWI_ADR_BITS) ;
+  messageBuf[1] = (state.eeprom_mem_address >> 8) & 0xff;
+  messageBuf[2] = state.eeprom_mem_address & 0xff;
+  messageBuf[3] = (word >> 8) & 0xff;
+  messageBuf[4] = word & 0xff;
+  state.eeprom_mem_address += 2;
+  USI_TWI_Start_Read_Write( messageBuf, 5);
+  _delay_ms(I2C_DELAY_MS);
+
+}
+
+void read_eeprom(uint8_t *buf, uint8_t n)
+{
+  uint8_t i;
+  uint8_t messageBuf[6];
+
+  messageBuf[0] = (state.eeprom_i2c_address << TWI_ADR_BITS) ;
+  messageBuf[1] = (state.eeprom_mem_address >> 8) & 0xff;
+  messageBuf[2] = state.eeprom_mem_address & 0xff;
+  USI_TWI_Start_Read_Write( messageBuf, 3);
+  _delay_ms(I2C_DELAY_MS);
+
+  for (i=0; i<n; i++)
+  {
+    messageBuf[0] = (state.eeprom_i2c_address << TWI_ADR_BITS) | (1<<TWI_READ_BIT);
+    messageBuf[1] = 1;
+    USI_TWI_Start_Read_Write( messageBuf, 2);
+    buf[i] = messageBuf[1];
+    _delay_ms(I2C_DELAY_MS);
+  }
+
+}
+
+// write to eeprom address pointers
+// updates address_pointer_seq
+void update_eeprom_address_pointers(void)
+{
+  uint16_t addr;
+  uint8_t messageBuf[8];
+
+  state.address_pointer_seq++;      // sequence
+  state.address_pointer_pos++;      // position in first n address pointer locations
+  state.address_pointer_pos %= state.n_address_pointer;
+
+  addr = HEADER_SIZE + ( ADDRESS_POINTER_SIZE * state.address_pointer_pos );
+
+  messageBuf[0] = (EEPROM_I2C_ADDR0 << TWI_ADR_BITS) ;
+  messageBuf[1] = (addr >> 8) & 0xff;
+  messageBuf[2] = addr & 0xff;
+  messageBuf[3] = state.address_pointer_seq;
+  messageBuf[4] = state.eeprom_i2c_address;
+  messageBuf[5] = (state.eeprom_mem_address >> 8) & 0xff;
+  messageBuf[6] = state.eeprom_mem_address & 0xff;
+  USI_TWI_Start_Read_Write( messageBuf, 7);
+  _delay_ms(I2C_DELAY_MS);
+
+}
+
+
+// load current eeprom address variables from eeprom address pointers
+//
+void setup_eeprom_address_vars()
+{
+  uint8_t i;
+  uint8_t is_wrap = 0;
+  uint8_t max_addr = 0;
+  uint8_t aux_addr = 0;
+  uint8_t address_pointer[ADDRESS_POINTER_SIZE];
+
+  uint8_t address_pointer_seq = 0xff;
+  uint8_t address_pointer_pos = 0xff;
+  uint8_t eeprom_i2c_address  = 0xff;
+  uint16_t eeprom_mem_address = 0xffff;
+
+  for (i=0; i < state.n_address_pointer; i++)
+  {
+    state.eeprom_mem_address = HEADER_SIZE + ( ADDRESS_POINTER_SIZE * i);
+    read_eeprom( address_pointer, ADDRESS_POINTER_SIZE );
+
+    // if we haven't read a max address yet, just ignore
+    // otherwise check if we've wrapped
+    if (  (max_addr > address_pointer[0]) &&
+         ((max_addr - address_pointer[0]) > (state.n_address_pointer - 1)) )
+      is_wrap = 1;
+
+    if ( max_addr <= address_pointer[0] )
+    {
+      max_addr = address_pointer[0];
+      if (!is_wrap)
+      {
+        address_pointer_seq = max_addr;
+        address_pointer_pos = i;
+        eeprom_i2c_address = address_pointer[1];
+        eeprom_mem_address = address_pointer[2] << 8;
+        eeprom_mem_address |= address_pointer[3];
+      }
+    }
+
+    // save address in case we've wrapped
+    if ( (address_pointer[0] < (256 - state.n_address_pointer)) &&
+         (aux_addr <= address_pointer[0]) )
+    {
+      aux_addr = address_pointer[0];
+      if (is_wrap)
+      {
+        address_pointer_seq = aux_addr;
+        address_pointer_pos = i;
+        eeprom_i2c_address = address_pointer[1];
+        eeprom_mem_address = address_pointer[2] << 8;
+        eeprom_mem_address |= address_pointer[3];
+      }
+    }
+
+  }
+
+  // generic initialization condition
+  // for example, if the memory has been flashed
+  if ( (address_pointer_seq == 0xff) &&
+       (eeprom_i2c_address == 0xff) )
+  {
+    state.address_pointer_seq = 0;
+    state.eeprom_i2c_address = DEFAULT_EEPROM;
+    state.eeprom_mem_address = HEADER_SIZE + (ADDRESS_POINTER_SIZE * state.n_address_pointer);
+
+    state.default_init = 1;
+  }
+  else
+  {
+    state.address_pointer_seq = address_pointer_seq;
+    state.address_pointer_pos   = address_pointer_pos;
+    state.eeprom_i2c_address  = eeprom_i2c_address;
+    state.eeprom_mem_address  = eeprom_mem_address;
+  }
+
+}
+
+void setup_boot_information(void)
+{
+  uint8_t i;
+  uint8_t messageBuf[6];
+  uint8_t header[HEADER_SIZE];
+
+  messageBuf[0] = (EEPROM_I2C_ADDR0 << TWI_ADR_BITS) ;
+  messageBuf[1] = 0;
+  messageBuf[2] = 0;
+  USI_TWI_Start_Read_Write( messageBuf, 3);
+  _delay_ms(I2C_DELAY_MS);
+
+  for (i=0; i<HEADER_SIZE; i++)
+  {
+    messageBuf[0] = (EEPROM_I2C_ADDR0 << TWI_ADR_BITS) | (1<<TWI_READ_BIT);
+    messageBuf[1] = 1;
+    USI_TWI_Start_Read_Write( messageBuf, 2);
+    _delay_ms(I2C_DELAY_MS);
+
+    header[i] = messageBuf[1];
+  }
+
+  state.eeprom_policy  = (header[0] & 0xf0) >> 4;
+  state.log_frequency  = (header[0] & 0x0f);
+  state.n_address_pointer = header[1];
+
+  if ( (state.eeprom_policy == 0xf) &&
+       (state.log_frequency == 0xf) &&
+       (state.n_address_pointer == 0xff) )
+  {
+    state.eeprom_policy = DEFAULT_EEPROM_POLICY;
+    state.log_frequency = DEFAULT_FREQ;
+    state.n_address_pointer = DEFAULT_N_ADDRESS;
+
+    state.default_init = 1;
+  }
+
+}
+
+void write_record( uint8_t record_type, uint8_t record_len, uint8_t *buf)
+{
+  uint8_t i;
+
+  update_eeprom_counters( record_len + 1 );
+  if (state.eeprom_full) return;
+
+  write_eeprom_1( record_type | record_len );
+  for (i=0; i < record_len; i++)
+    write_eeprom_1( buf[i] );
+  
+}
+
+void setup_default(void)
+{
+  uint8_t i;
+
+  state.eeprom_i2c_address = DEFAULT_EEPROM;
+  state.eeprom_mem_address = 0;
+
+  write_eeprom_1( DEFAULT_EEPROM_POLICY | DEFAULT_FREQ );
+  write_eeprom_1( DEFAULT_N_ADDRESS );
+
+  for (i=2; i<HEADER_SIZE; i++)
+    write_eeprom_1(0);
+
+  for (i=0; i<DEFAULT_N_ADDRESS; i++)
+  {
+    write_eeprom_1(i);
+    write_eeprom_1(DEFAULT_EEPROM);
+    write_eeprom( HEADER_SIZE + (DEFAULT_N_ADDRESS*ADDRESS_POINTER_SIZE) );
+  }
+
 }
