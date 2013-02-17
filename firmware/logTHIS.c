@@ -127,16 +127,17 @@ uint16_t readPAR_Sensor (int pinPAR_SENSOR);
 uint16_t readPAR_SensorADC (int pinPAR_SENSOR);
 uint16_t readPAR_SensorCAPADC (int pinPAR_SENSOR);
 int set_RTC_bit (uint8_t device, uint8_t address, uint8_t bit, uint8_t value);
+void get_rtc_str_date(uint8_t *dt);
 
 void setup_boot_information(void);
-void setup_eeprom_address_vars(void);
+void setup_xeprom_address_vars(void);
 void setup_default(void);
-void update_eeprom_address_pointers(void);
-void update_eeprom_counters(uint8_t chunk);
+void update_xeprom_address_pointers(void);
+void update_xeprom_counters(uint8_t chunk);
 
 void write_eeprom(uint16_t);
-void write_eeprom_2(uint8_t, uint8_t);
-void write_eeprom_1(uint8_t byt);
+void write_xeprom_2(uint8_t, uint8_t);
+void write_xeprom_1(uint8_t byt);
 void read_eeprom(uint8_t *, uint8_t );
 
 void write_record( uint8_t record_type, uint8_t record_len, uint8_t *buf);
@@ -184,10 +185,11 @@ logTHIS_state_t state = { {0} };
 
 
 // defaults
-#define DEFAULT_N_ADDRESS 8
-#define DEFAULT_FREQ  LOG_FREQ_30M
-#define DEFAULT_EEPROM EEPROM_I2C_ADDR0
-#define DEFAULT_EEPROM_POLICY EEPROM_POLICY_STOP
+#define DEFAULT_N_ADDRESS               8
+//#define DEFAULT_FREQ                    LOG_FREQ_30M
+#define DEFAULT_FREQ                    LOG_FREQ_1M
+#define DEFAULT_EEPROM                  EEPROM_I2C_ADDR0
+#define DEFAULT_EEPROM_POLICY           EEPROM_POLICY_STOP
 
 
 // temporary, should just go to sleep and never wake up
@@ -195,9 +197,15 @@ logTHIS_state_t state = { {0} };
 //
 void log_full_state(void)
 {
+  set_DDRB_bit(1,1);
   for (;;)
   {
+    set_PORTB_bit(1,1);  // sets B0 as high
+    _delay_ms(100);
+    set_PORTB_bit(1,0); // sets B0 as low
+    _delay_ms(100);
   }
+  set_DDRB_bit(1,0);
 }
 
 void blink_always(void)
@@ -221,6 +229,8 @@ int main (void)
     int i;
     int16_t currentHumidity;
     int16_t currentTemperature;
+
+    uint8_t rtc_str_date[14];
 
     // configure sleep state and interrupt pin
     set_sleep_mode(SLEEP_MODE_PWR_DOWN);
@@ -254,7 +264,7 @@ int main (void)
     state.eeprom_full = 0;
     state.default_init = 0;
     setup_boot_information();
-    setup_eeprom_address_vars();
+    setup_xeprom_address_vars();
 
     // in case we have factory eeprom
     // store some default values, re-read
@@ -262,7 +272,7 @@ int main (void)
     {
       setup_default();
       setup_boot_information();
-      setup_eeprom_address_vars();
+      setup_xeprom_address_vars();
     }
 
 
@@ -274,32 +284,35 @@ int main (void)
 
 
     // write header event
-    update_eeprom_counters(6);
+    update_xeprom_counters(6);
     if (state.eeprom_full) log_full_state();
-    write_eeprom_1( RECORD_INFO | 5 );
-    write_eeprom_1( (state.eeprom_policy << 4) | (state.log_frequency) );
-    write_eeprom_1( state.n_address_pointer );
-    write_eeprom_1( state.eeprom_i2c_address );
+    write_xeprom_1( RECORD_INFO | 5 );
+    write_xeprom_1( (state.eeprom_policy << 4) | (state.log_frequency) );
+    write_xeprom_1( state.n_address_pointer );
+    write_xeprom_1( state.eeprom_i2c_address );
     write_eeprom( state.eeprom_mem_address );
 
     // read RTC time and write date record
     // placeholder for now
-    write_record( RECORD_DATE, 12, (uint8_t *)"199912315959" );
-    update_eeprom_address_pointers();
+    get_rtc_str_date(rtc_str_date);
+    write_record( RECORD_DATE, 14, rtc_str_date);
+    update_xeprom_address_pointers();
 
 
-    //*************************************************
+    // *************************************************
     // DEBUG!!
     //log_full_state();
     //blink_always();
 
+    /*
     sleep_enable();
     sei();
     sleep_cpu();
     sleep_disable();
     blink_always();
+    */
 
-    //*************************************************
+    // *************************************************
 
     //-------------------------------
 
@@ -596,32 +609,35 @@ int main (void)
 
 
             /*
-            update_eeprom_counters(2);
+            update_xeprom_counters(2);
             if (!state.eeprom_full)
-              write_eeprom_2(minutes, hours);
+              write_xeprom_2(minutes, hours);
               */
 
             /*
-            update_eeprom_counters(2);
+            update_xeprom_counters(2);
             if (!state.eeprom_full)
               write_eeprom(PARdata);
               */
 
             /*
-            update_eeprom_counters(2);
+            update_xeprom_counters(2);
             if (!state.eeprom_full)
               write_eeprom(PARdataCAPADC);
               */
 
-            update_eeprom_counters(5);
+            update_xeprom_counters(5);
             if (!state.eeprom_full)
-              write_eeprom_1( RECORD_DATA | 4 );
+              write_xeprom_1( RECORD_DATA | 4 );
 
             if (!state.eeprom_full)
               write_eeprom(currentTemperature);
 
             if (!state.eeprom_full)
               write_eeprom(currentHumidity);
+
+            if (!state.eeprom_full)
+              update_xeprom_address_pointers();
 
         } // end of if (MEASUREMENT IS NEEDED)
 
@@ -920,7 +936,7 @@ uint16_t readPAR_SensorCAPADC (int pinPAR_SENSOR)
     return(returnPARdata);
 }
 
-void update_eeprom_counters(uint8_t chunk) 
+void update_xeprom_counters(uint8_t chunk) 
 {
 
   if ( (state.eeprom_mem_address + chunk) > EEPROM_BANK_SIZE )
@@ -931,6 +947,7 @@ void update_eeprom_counters(uint8_t chunk)
               (state.eeprom_i2c_address == EEPROM_I2C_ADDR1) )
     {
       state.eeprom_i2c_address = EEPROM_I2C_ADDR0;
+      state.eeprom_mem_address = HEADER_SIZE + (ADDRESS_POINTER_SIZE * state.n_address_pointer);
     }
 
     // signal stop
@@ -952,7 +969,7 @@ void update_eeprom_counters(uint8_t chunk)
 }
 
 
-void write_eeprom_1(uint8_t byt)
+void write_xeprom_1(uint8_t byt)
 {
   uint8_t messageBuf[6];
 
@@ -966,7 +983,7 @@ void write_eeprom_1(uint8_t byt)
 
 }
 
-void write_eeprom_2(uint8_t byt0, uint8_t byt1)
+void write_xeprom_2(uint8_t byt0, uint8_t byt1)
 {
   uint8_t messageBuf[6];
 
@@ -1020,7 +1037,7 @@ void read_eeprom(uint8_t *buf, uint8_t n)
 
 // write to eeprom address pointers
 // updates address_pointer_seq
-void update_eeprom_address_pointers(void)
+void update_xeprom_address_pointers(void)
 {
   uint16_t addr;
   uint8_t messageBuf[8];
@@ -1046,7 +1063,7 @@ void update_eeprom_address_pointers(void)
 
 // load current eeprom address variables from eeprom address pointers
 //
-void setup_eeprom_address_vars()
+void setup_xeprom_address_vars()
 {
   uint8_t i;
   uint8_t is_wrap = 0;
@@ -1164,12 +1181,12 @@ void write_record( uint8_t record_type, uint8_t record_len, uint8_t *buf)
 {
   uint8_t i;
 
-  update_eeprom_counters( record_len + 1 );
+  update_xeprom_counters( record_len + 1 );
   if (state.eeprom_full) return;
 
-  write_eeprom_1( record_type | record_len );
+  write_xeprom_1( record_type | record_len );
   for (i=0; i < record_len; i++)
-    write_eeprom_1( buf[i] );
+    write_xeprom_1( buf[i] );
   
 }
 
@@ -1180,17 +1197,88 @@ void setup_default(void)
   state.eeprom_i2c_address = DEFAULT_EEPROM;
   state.eeprom_mem_address = 0;
 
-  write_eeprom_1( DEFAULT_EEPROM_POLICY | DEFAULT_FREQ );
-  write_eeprom_1( DEFAULT_N_ADDRESS );
+  write_xeprom_1( DEFAULT_EEPROM_POLICY | DEFAULT_FREQ );
+  write_xeprom_1( DEFAULT_N_ADDRESS );
 
   for (i=2; i<HEADER_SIZE; i++)
-    write_eeprom_1(0);
+    write_xeprom_1(0);
 
   for (i=0; i<DEFAULT_N_ADDRESS; i++)
   {
-    write_eeprom_1(i);
-    write_eeprom_1(DEFAULT_EEPROM);
+    write_xeprom_1(i);
+    write_xeprom_1(DEFAULT_EEPROM);
     write_eeprom( HEADER_SIZE + (DEFAULT_N_ADDRESS*ADDRESS_POINTER_SIZE) );
   }
+
+}
+
+// convert RTC date into a string
+void get_rtc_str_date(uint8_t *dt)
+{
+
+  uint8_t i;
+  uint8_t messageBuf[6];
+  uint8_t buf[10];
+  uint8_t h;
+
+  messageBuf[0] = (RTC_I2C_ADDR << 1) ;
+  messageBuf[1] = 0;
+  USI_TWI_Start_Read_Write( messageBuf, 2);
+  _delay_ms(I2C_DELAY_MS);
+
+  for (i=0; i<7; i++)
+  {
+    messageBuf[0] = (RTC_I2C_ADDR << 1) | 1;
+    messageBuf[1] = 0xbe;
+    messageBuf[2] = 0xef;  // dummy values for read
+    USI_TWI_Start_Read_Write( messageBuf, 2);
+    _delay_ms(I2C_DELAY_MS);
+
+    buf[i] = messageBuf[1];
+  }
+
+  // we're assuming we live in the future
+  //year
+  dt[0] = '2';
+  dt[1] = '0';
+  dt[2] = ((buf[6] & 0xf0) >> 4) + '0';
+  dt[3] =  (buf[6] & 0x0f) + '0';
+
+  //month
+  dt[4] = ((buf[5] & 0x10) >> 4) + '0';
+  dt[5] =  (buf[5] & 0x0f) + '0';
+
+  //date
+  dt[6] = ((buf[4] & 0x30) >> 4) + '0';
+  dt[7] =  (buf[4] & 0x0f) + '0';
+
+  //hour
+  if ( buf[2] & 0x40 ) // check 12 / 24' bit
+  {
+    // convert from bcd to integer
+    h = (((buf[2] & 0x10) >> 4)*10) + (buf[2] & 0x0f);
+    if ( buf[2] & 0x20 ) // am' / pm flag
+      h += 12;
+
+    // convert to ascii
+    dt[8] = (h / 10) + '0';
+    dt[0] = (h % 10) + '0';
+    
+  }
+  else  //mil time
+  {
+    dt[8] = ((buf[2] & 0x30) >> 4) + '0';
+    dt[9] =  (buf[2] & 0x0f) + '0';
+  }
+
+  //minute
+  dt[10] = ((buf[1] & 0x70) >> 4) + '0';
+  dt[11] =  (buf[1] & 0x0f) + '0';
+
+
+  // seconds
+  dt[12] = ((buf[0] & 0x70) >> 4) + '0';
+  dt[13] =  (buf[0] & 0x0f) + '0';
+
 
 }
