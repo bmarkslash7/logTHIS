@@ -1,0 +1,152 @@
+# EESchema Netlist Version 1.1 created  Thu 21 Feb 2013 06:30:01 AM EST
+(
+ ( /50CD8A2C C1 C1 .1mF
+  ( 1 GND )
+  ( 2 VCC )
+ )
+ ( /50CD8AE8 LEDV D1 LED
+  ( 1 /Vsensor )
+  ( 2 N-000011 )
+ )
+ ( /50D1679E SIL-3 K1 Sensor1
+  ( 1 /Vsensor )
+  ( 2 GND )
+  ( 3 /SENSOR1 )
+ )
+ ( /50D167A4 SIL-3 K2 Sensor0
+  ( 1 /Vsensor )
+  ( 2 GND )
+  ( 3 /SENSOR0 )
+ )
+ ( /50CD8A01 SIL-6 P1 CONN_6
+  ( 1 VCC )
+  ( 2 GND )
+  ( 3 /RST )
+  ( 4 /I2C_DAT )
+  ( 5 /PIN6 )
+  ( 6 /I2C_CLK )
+ )
+ ( /50D000B3 SIL-2 P2 Battery
+  ( 1 VCC )
+  ( 2 GND )
+ )
+ ( /50D1666E SIL-4 P3 I2C_Sense
+  ( 1 /Vsensor )
+  ( 2 GND )
+  ( 3 /I2C_CLK )
+  ( 4 /I2C_DAT )
+ )
+ ( /50E515A4 SIL-2 P4 PWR_JMP
+  ( 1 /PWR_JMP )
+  ( 2 VCC )
+ )
+ ( /51260506 1pin P5 CONN_1
+  ( 1 ? )
+ )
+ ( /5126050A 1pin P6 CONN_1
+  ( 1 ? )
+ )
+ ( /5126050B 1pin P7 CONN_1
+  ( 1 ? )
+ )
+ ( /5126050D 1pin P8 CONN_1
+  ( 1 ? )
+ )
+ ( /50CD8B00 TO92DGS Q1 MOSFET_N
+  ( D /Vsensor )
+  ( G /PIN6 )
+  ( S VCC )
+ )
+ ( /50D16F5C R3 R1 10k
+  ( 1 /PIN6 )
+  ( 2 VCC )
+ )
+ ( /50D17445 R3 R2 4.7k
+  ( 1 VCC )
+  ( 2 /I2C_CLK )
+ )
+ ( /50D1744F R3 R3 4.7k
+  ( 1 VCC )
+  ( 2 /I2C_DAT )
+ )
+ ( /50CD8A22 R3 R4 1k
+  ( 1 N-000011 )
+  ( 2 GND )
+ )
+ ( /50CD885F DIP-8__300_ELL U1 24AA1025
+  ( 1 GND )
+  ( 2 GND )
+  ( 3 /PWR_JMP )
+  ( 4 GND )
+  ( 5 /I2C_DAT )
+  ( 6 /I2C_CLK )
+  ( 7 GND )
+  ( 8 VCC )
+ )
+ ( /50CD8855 DIP-8__300_ELL U2 DS1337
+  ( 1 N-000007 )
+  ( 2 N-000008 )
+  ( 3 /PIN6 )
+  ( 4 GND )
+  ( 5 /I2C_DAT )
+  ( 6 /I2C_CLK )
+  ( 7 ? )
+  ( 8 VCC )
+ )
+ ( /50CD886D DIP-8__300_ELL U3 ATTINY85V
+  ( 1 /RST )
+  ( 2 /SENSOR0 )
+  ( 3 /SENSOR1 )
+  ( 4 GND )
+  ( 5 /I2C_DAT )
+  ( 6 /PIN6 )
+  ( 7 /I2C_CLK )
+  ( 8 VCC )
+ )
+ ( /50CD8C7A HC-18UV X1 32.768_kHz
+  ( 1 N-000007 )
+  ( 2 N-000008 )
+ )
+)
+*
+{ Allowed footprints by component:
+$component C1
+ SM*
+ C?
+ C1-1
+$endlist
+$component D1
+ LED-3MM
+ LED-5MM
+ LED-10MM
+ LED-0603
+ LED-0805
+ LED-1206
+ LEDV
+$endlist
+$component R1
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$component R2
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$component R3
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$component R4
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$endfootprintlist
+}

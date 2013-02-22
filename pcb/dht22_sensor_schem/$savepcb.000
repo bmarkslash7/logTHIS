@@ -1,0 +1,243 @@
+PCBNEW-BOARD Version 1 date Mon 18 Feb 2013 03:09:21 AM EST
+
+# Created by Pcbnew(2011-05-25)-stable
+
+$GENERAL
+encoding utf-8
+LayerCount 2
+Ly 1FFF8001
+EnabledLayers 1FFF8001
+Links 5
+NoConn 5
+Di 22484 14484 37196 26576
+Ndraw 5
+Ntrack 0
+Nzone 0
+BoardThickness 630
+Nmodule 3
+Nnets 4
+$EndGENERAL
+
+$SHEETDESCR
+Sheet A4 11700 8267
+Title ""
+Date "18 feb 2013"
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndSHEETDESCR
+
+$SETUP
+InternalUnit 0.000100 INCH
+Layers 2
+Layer[0] Back signal
+Layer[15] Front signal
+TrackWidth 150
+TrackClearence 100
+ZoneClearence 200
+TrackMinWidth 80
+DrawSegmWidth 150
+EdgeSegmWidth 150
+ViaSize 350
+ViaDrill 250
+ViaMinSize 350
+ViaMinDrill 200
+MicroViaSize 200
+MicroViaDrill 50
+MicroViasAllowed 0
+MicroViaMinSize 200
+MicroViaMinDrill 50
+TextPcbWidth 120
+TextPcbSize 600 800
+EdgeModWidth 100
+TextModSize 600 600
+TextModWidth 120
+PadSize 593 1187
+PadDrill 393
+Pad2MaskClearance 100
+AuxiliaryAxisOrg 0 0
+PcbPlotParams (pcbplotparams (layerselection 271613953) (usegerberextensions true) (excludeedgelayer true) (linewidth 60) (plotframeref false) (viasonmask false) (mode 1) (useauxorigin false) (hpglpennumber 1) (hpglpenspeed 20) (hpglpendiameter 15) (hpglpenoverlay 0) (pscolor true) (psnegative false) (psa4output false) (plotreference true) (plotvalue true) (plotothertext true) (plotinvisibletext false) (padsonsilk false) (subtractmaskfromsilk false) (outputformat 1) (mirror false) (drillshape 1) (scaleselection 1) (outputdirectory ""))
+$EndSETUP
+
+$EQUIPOT
+Na 0 ""
+St ~
+$EndEQUIPOT
+$EQUIPOT
+Na 1 "/sensor"
+St ~
+$EndEQUIPOT
+$EQUIPOT
+Na 2 "GND"
+St ~
+$EndEQUIPOT
+$EQUIPOT
+Na 3 "VCC"
+St ~
+$EndEQUIPOT
+$NCLASS
+Name "Default"
+Desc "This is the default net class."
+Clearance 100
+TrackWidth 150
+ViaDia 350
+ViaDrill 250
+uViaDia 200
+uViaDrill 50
+AddNet ""
+AddNet "/sensor"
+AddNet "GND"
+AddNet "VCC"
+$EndNCLASS
+$MODULE R3-LARGE_PADS
+Po 33080 19520 900 15 47E26765 5121967B ~~
+Li R3-LARGE_PADS
+Cd Resitance 3 pas
+Kw R
+Sc 5121967B
+AR /510F175B
+Op 0 A 0
+T0 0 0 550 500 900 80 N V 21 N "R1"
+T1 0 0 550 500 900 80 N I 21 N "10k"
+DS -1500 0 -1300 0 120 21
+DS 1500 0 1300 0 120 21
+DS 1300 0 1300 -400 120 21
+DS 1300 -400 -1300 -400 120 21
+DS -1300 -400 -1300 400 120 21
+DS -1300 400 1300 400 120 21
+DS 1300 400 1300 0 120 21
+DS -1300 -200 -1100 -400 120 21
+$PAD
+Sh "1" C 650 650 0 0 900
+Dr 320 0 0
+At STD N 00E0FFFF
+Ne 1 "/sensor"
+Po -1500 0
+$EndPAD
+$PAD
+Sh "2" C 650 650 0 0 900
+Dr 320 0 0
+At STD N 00E0FFFF
+Ne 3 "VCC"
+Po 1500 0
+$EndPAD
+$SHAPE3D
+Na "discret/resistor.wrl"
+Sc 0.300000 0.300000 0.300000
+Of 0.000000 0.000000 0.000000
+Ro 0.000000 0.000000 0.000000
+$EndSHAPE3D
+$EndMODULE  R3-LARGE_PADS
+$MODULE PINHEAD1-3
+Po 28920 18160 0 15 4C5EDE92 5121967E ~~
+Li PINHEAD1-3
+Sc 5121967E
+AR /510F17A2
+Op 0 0 0
+At VIRTUAL 
+T0 -1250 -1500 400 400 0 35 N V 21 N "K1"
+T1 0 1500 400 400 0 35 N V 21 N "CONN_3"
+DS -1500 -1250 -1500 1250 100 21
+DS 1500 -1250 1500 1250 100 21
+DS 1500 -500 -1500 -500 100 21
+DS -1500 -1250 1500 -1250 100 21
+DS 1500 1250 -1500 1250 100 21
+$PAD
+Sh "1" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A8FFFF
+Ne 3 "VCC"
+Po -1000 0
+$EndPAD
+$PAD
+Sh "2" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A88001
+Ne 1 "/sensor"
+Po 0 0
+$EndPAD
+$PAD
+Sh "3" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A88001
+Ne 2 "GND"
+Po 1000 0
+$EndPAD
+$EndMODULE  PINHEAD1-3
+$MODULE PINHEAD1-4
+Po 28820 22960 0 15 51219614 512196A2 ~~
+Li PINHEAD1-4
+Sc 512196A2
+AR /510F1629
+Op 0 0 0
+At VIRTUAL 
+T0 0 -1550 400 400 0 35 N V 21 N "P1"
+T1 0 1500 400 400 0 35 N V 21 N "DHT22"
+DS 1500 1250 2000 1250 100 21
+DS -1500 1250 -2000 1250 100 21
+DS -1450 -450 -2000 -450 100 21
+DS 1550 -450 2000 -450 100 21
+DS 1500 -1250 2000 -1250 100 21
+DS -1500 -1250 -2000 -1250 100 21
+DS -2000 -1250 -2000 1250 100 21
+DS 2000 -1250 2000 1250 100 21
+DS 1550 -450 -1450 -450 100 21
+DS -1500 -1250 1500 -1250 100 21
+DS 1500 1250 -1500 1250 100 21
+$PAD
+Sh "4" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A8FFFF
+Ne 2 "GND"
+Po 1500 0
+$EndPAD
+$PAD
+Sh "1" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A8FFFF
+Ne 3 "VCC"
+Po -1500 0
+$EndPAD
+$PAD
+Sh "2" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A88001
+Ne 1 "/sensor"
+Po -500 0
+$EndPAD
+$PAD
+Sh "3" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A88001
+Ne 0 ""
+Po 500 0
+$EndPAD
+$EndMODULE  PINHEAD1-4
+$DRAWSEGMENT
+Po 0 22860 14560 22920 14560 150
+De 28 0 900 0 0
+$EndDRAWSEGMENT
+$DRAWSEGMENT
+Po 0 22860 26500 22860 14560 150
+De 28 0 900 0 0
+$EndDRAWSEGMENT
+$DRAWSEGMENT
+Po 0 37120 26500 22860 26500 150
+De 28 0 900 0 0
+$EndDRAWSEGMENT
+$DRAWSEGMENT
+Po 0 37120 14560 37120 26500 150
+De 28 0 900 0 0
+$EndDRAWSEGMENT
+$DRAWSEGMENT
+Po 0 22560 14560 37120 14560 150
+De 28 0 900 0 0
+$EndDRAWSEGMENT
+$TRACK
+$EndTRACK
+$ZONE
+$EndZONE
+$EndBOARD

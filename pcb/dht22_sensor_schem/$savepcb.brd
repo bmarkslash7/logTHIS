@@ -1,0 +1,335 @@
+PCBNEW-BOARD Version 1 date Thu 21 Feb 2013 02:38:27 AM EST
+
+# Created by Pcbnew(2011-05-25)-stable
+
+$GENERAL
+encoding utf-8
+LayerCount 2
+Ly 1FFF8001
+EnabledLayers 1FFF8001
+Links 5
+NoConn 0
+Di 117 1510 10503 10470
+Ndraw 0
+Ntrack 18
+Nzone 0
+BoardThickness 630
+Nmodule 7
+Nnets 4
+$EndGENERAL
+
+$SHEETDESCR
+Sheet A4 11700 8267
+Title ""
+Date "21 feb 2013"
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndSHEETDESCR
+
+$SETUP
+InternalUnit 0.000100 INCH
+Layers 2
+Layer[0] Back signal
+Layer[15] Front signal
+TrackWidth 150
+TrackClearence 100
+ZoneClearence 200
+TrackMinWidth 80
+DrawSegmWidth 150
+EdgeSegmWidth 150
+ViaSize 350
+ViaDrill 250
+ViaMinSize 350
+ViaMinDrill 200
+MicroViaSize 200
+MicroViaDrill 50
+MicroViasAllowed 0
+MicroViaMinSize 200
+MicroViaMinDrill 50
+TextPcbWidth 120
+TextPcbSize 600 800
+EdgeModWidth 150
+TextModSize 600 600
+TextModWidth 120
+PadSize 600 600
+PadDrill 320
+Pad2MaskClearance 100
+AuxiliaryAxisOrg 0 0
+PcbPlotParams (pcbplotparams (layerselection 271613953) (usegerberextensions true) (excludeedgelayer true) (linewidth 60) (plotframeref false) (viasonmask false) (mode 1) (useauxorigin false) (hpglpennumber 1) (hpglpenspeed 20) (hpglpendiameter 15) (hpglpenoverlay 0) (pscolor true) (psnegative false) (psa4output false) (plotreference true) (plotvalue true) (plotothertext true) (plotinvisibletext false) (padsonsilk false) (subtractmaskfromsilk false) (outputformat 1) (mirror false) (drillshape 1) (scaleselection 1) (outputdirectory ""))
+$EndSETUP
+
+$EQUIPOT
+Na 0 ""
+St ~
+$EndEQUIPOT
+$EQUIPOT
+Na 1 "/sensor"
+St ~
+$EndEQUIPOT
+$EQUIPOT
+Na 2 "GND"
+St ~
+$EndEQUIPOT
+$EQUIPOT
+Na 3 "VCC"
+St ~
+$EndEQUIPOT
+$NCLASS
+Name "Default"
+Desc "This is the default net class."
+Clearance 100
+TrackWidth 150
+ViaDia 350
+ViaDrill 250
+uViaDia 200
+uViaDrill 50
+AddNet ""
+AddNet "/sensor"
+AddNet "GND"
+AddNet "VCC"
+$EndNCLASS
+$MODULE R3-LARGE_PADS
+Po 6720 7180 900 15 47E26765 5124B925 ~~
+Li R3-LARGE_PADS
+Cd Resitance 3 pas
+Kw R
+Sc 5124B925
+AR /510F175B
+Op 0 A 0
+T0 0 0 550 500 900 80 N V 21 N "R1"
+T1 0 0 550 500 900 80 N I 21 N "10k"
+DS -1500 0 -1300 0 120 21
+DS 1500 0 1300 0 120 21
+DS 1300 0 1300 -400 120 21
+DS 1300 -400 -1300 -400 120 21
+DS -1300 -400 -1300 400 120 21
+DS -1300 400 1300 400 120 21
+DS 1300 400 1300 0 120 21
+DS -1300 -200 -1100 -400 120 21
+$PAD
+Sh "1" C 650 650 0 0 900
+Dr 320 0 0
+At STD N 00E0FFFF
+Ne 1 "/sensor"
+Po -1500 0
+$EndPAD
+$PAD
+Sh "2" C 650 650 0 0 900
+Dr 320 0 0
+At STD N 00E0FFFF
+Ne 3 "VCC"
+Po 1500 0
+$EndPAD
+$SHAPE3D
+Na "discret/resistor.wrl"
+Sc 0.300000 0.300000 0.300000
+Of 0.000000 0.000000 0.000000
+Ro 0.000000 0.000000 0.000000
+$EndSHAPE3D
+$EndMODULE  R3-LARGE_PADS
+$MODULE PINHEAD1-3
+Po 4600 6820 0 15 4C5EDE92 5124B927 ~~
+Li PINHEAD1-3
+Sc 5124B927
+AR /510F17A2
+Op 0 0 0
+At VIRTUAL 
+T0 -1250 -1500 400 400 0 35 N V 21 N "K1"
+T1 0 1500 400 400 0 35 N V 21 N "CONN_3"
+DS -1500 -1250 -1500 1250 100 21
+DS 1500 -1250 1500 1250 100 21
+DS 1500 -500 -1500 -500 100 21
+DS -1500 -1250 1500 -1250 100 21
+DS 1500 1250 -1500 1250 100 21
+$PAD
+Sh "1" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A8FFFF
+Ne 3 "VCC"
+Po -1000 0
+$EndPAD
+$PAD
+Sh "2" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A88001
+Ne 2 "GND"
+Po 0 0
+$EndPAD
+$PAD
+Sh "3" O 593 1187 0 0 0
+Dr 393 0 0
+At STD N 00A88001
+Ne 1 "/sensor"
+Po 1000 0
+$EndPAD
+$EndMODULE  PINHEAD1-3
+$MODULE 1pin
+Po 1600 3060 0 15 00200000 5124B928 ~~
+Li 1pin
+Cd module 1 pin (ou trou mecanique de percage)
+Kw DEV
+Sc 5124B928
+AR /5124B8BA
+Op 0 0 0
+T0 0 -1200 400 400 0 100 N V 21 N "P2"
+T1 0 1100 400 400 0 100 N I 21 N "CONN_1"
+DC 0 0 0 -900 150 21
+$PAD
+Sh "1" C 1600 1600 0 0 0
+Dr 1200 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 0 0
+$EndPAD
+$EndMODULE  1pin
+$MODULE 1pin
+Po 8840 3160 0 15 00200000 5124B92A ~~
+Li 1pin
+Cd module 1 pin (ou trou mecanique de percage)
+Kw DEV
+Sc 5124B92A
+AR /5124B8C0
+Op 0 0 0
+T0 0 -1200 400 400 0 100 N V 21 N "P3"
+T1 0 1100 400 400 0 100 N I 21 N "CONN_1"
+DC 0 0 0 -900 150 21
+$PAD
+Sh "1" C 1600 1600 0 0 0
+Dr 1200 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 0 0
+$EndPAD
+$EndMODULE  1pin
+$MODULE 1pin
+Po 1740 9020 0 15 00200000 5124B92C ~~
+Li 1pin
+Cd module 1 pin (ou trou mecanique de percage)
+Kw DEV
+Sc 5124B92C
+AR /5124B8C1
+Op 0 0 0
+T0 0 -1200 400 400 0 100 N V 21 N "P4"
+T1 0 1100 400 400 0 100 N I 21 N "CONN_1"
+DC 0 0 0 -900 150 21
+$PAD
+Sh "1" C 1600 1600 0 0 0
+Dr 1200 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 0 0
+$EndPAD
+$EndMODULE  1pin
+$MODULE 1pin
+Po 9020 8940 0 15 00200000 5124B92E ~~
+Li 1pin
+Cd module 1 pin (ou trou mecanique de percage)
+Kw DEV
+Sc 5124B92E
+AR /5124B8C3
+Op 0 0 0
+T0 0 -1200 400 400 0 100 N V 21 N "P5"
+T1 0 1100 400 400 0 100 N I 21 N "CONN_1"
+DC 0 0 0 -900 150 21
+$PAD
+Sh "1" C 1600 1600 0 0 0
+Dr 1200 0 0
+At STD N 00E0FFFF
+Ne 0 ""
+Po 0 0
+$EndPAD
+$EndMODULE  1pin
+$MODULE PINHEAD1-4
+Po 5220 3700 1800 15 51219614 5124B939 ~~
+Li PINHEAD1-4
+Sc 5124B939
+AR /510F1629
+Op 0 0 0
+At VIRTUAL 
+T0 0 -1550 400 400 1800 35 N V 21 N "P1"
+T1 0 1500 400 400 1800 35 N V 21 N "DHT22"
+DS 1500 1250 2000 1250 100 21
+DS -1500 1250 -2000 1250 100 21
+DS -1450 -450 -2000 -450 100 21
+DS 1550 -450 2000 -450 100 21
+DS 1500 -1250 2000 -1250 100 21
+DS -1500 -1250 -2000 -1250 100 21
+DS -2000 -1250 -2000 1250 100 21
+DS 2000 -1250 2000 1250 100 21
+DS 1550 -450 -1450 -450 100 21
+DS -1500 -1250 1500 -1250 100 21
+DS 1500 1250 -1500 1250 100 21
+$PAD
+Sh "4" O 593 1187 0 0 1800
+Dr 393 0 0
+At STD N 00A8FFFF
+Ne 2 "GND"
+Po 1500 0
+$EndPAD
+$PAD
+Sh "1" O 593 1187 0 0 1800
+Dr 393 0 0
+At STD N 00A8FFFF
+Ne 3 "VCC"
+Po -1500 0
+$EndPAD
+$PAD
+Sh "2" O 593 1187 0 0 1800
+Dr 393 0 0
+At STD N 00A88001
+Ne 1 "/sensor"
+Po -500 0
+$EndPAD
+$PAD
+Sh "3" O 593 1187 0 0 1800
+Dr 393 0 0
+At STD N 00A88001
+Ne 0 ""
+Po 500 0
+$EndPAD
+$EndMODULE  PINHEAD1-4
+$TRACK
+Po 0 5600 6820 5900 6820 150 -1
+De 0 0 1 0 400000
+Po 0 6720 7640 6720 8680 150 -1
+De 0 0 1 0 800000
+Po 0 5900 6820 6720 7640 150 -1
+De 0 0 1 0 0
+Po 0 5600 6820 5600 3820 150 -1
+De 0 0 1 0 400000
+Po 0 5600 3820 5720 3700 150 -1
+De 0 0 1 0 800000
+Po 0 3720 3700 3720 4600 150 -1
+De 0 0 2 0 400000
+Po 0 4600 5480 4600 6820 150 -1
+De 0 0 2 0 800000
+Po 0 3720 4600 4600 5480 150 -1
+De 0 0 2 0 0
+Po 0 3600 6820 3600 7620 150 -1
+De 0 0 3 0 400000
+Po 0 6720 6360 6720 5680 150 -1
+De 0 0 3 0 800000
+Po 0 7420 7060 6720 6360 150 -1
+De 0 0 3 0 0
+Po 0 7420 9080 7420 7060 150 -1
+De 0 0 3 0 0
+Po 0 7100 9400 7420 9080 150 -1
+De 0 0 3 0 0
+Po 0 6120 9400 7100 9400 150 -1
+De 0 0 3 0 0
+Po 0 5000 8280 6120 9400 150 -1
+De 0 0 3 0 0
+Po 0 4260 8280 5000 8280 150 -1
+De 0 0 3 0 0
+Po 0 3600 7620 4260 8280 150 -1
+De 0 0 3 0 0
+Po 0 6720 3700 6720 5680 150 -1
+De 0 0 3 0 C00000
+$EndTRACK
+$ZONE
+$EndZONE
+$EndBOARD

@@ -1,0 +1,52 @@
+Cmp-Mod V01 Created by CvPCB (2011-05-25)-stable date = Wed 20 Feb 2013 06:52:53 AM EST
+
+BeginCmp
+TimeStamp = /510F17A2;
+Reference = K1;
+ValeurCmp = CONN_3;
+IdModule  = PINHEAD1-3;
+EndCmp
+
+BeginCmp
+TimeStamp = /510F1629;
+Reference = P1;
+ValeurCmp = DHT22;
+IdModule  = PINHEAD1-4;
+EndCmp
+
+BeginCmp
+TimeStamp = /5124B8BA;
+Reference = P2;
+ValeurCmp = CONN_1;
+IdModule  = 1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /5124B8C0;
+Reference = P3;
+ValeurCmp = CONN_1;
+IdModule  = 1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /5124B8C1;
+Reference = P4;
+ValeurCmp = CONN_1;
+IdModule  = 1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /5124B8C3;
+Reference = P5;
+ValeurCmp = CONN_1;
+IdModule  = 1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /510F175B;
+Reference = R1;
+ValeurCmp = 10k;
+IdModule  = R3-LARGE_PADS;
+EndCmp
+
+EndListe

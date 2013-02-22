@@ -1,0 +1,205 @@
+EESchema Schematic File Version 2  date Wed 20 Feb 2013 06:51:56 AM EST
+LIBS:power
+LIBS:device
+LIBS:transistors
+LIBS:conn
+LIBS:linear
+LIBS:regul
+LIBS:74xx
+LIBS:cmos4000
+LIBS:adc-dac
+LIBS:memory
+LIBS:xilinx
+LIBS:special
+LIBS:microcontrollers
+LIBS:dsp
+LIBS:microchip
+LIBS:analog_switches
+LIBS:motorola
+LIBS:texas
+LIBS:intel
+LIBS:audio
+LIBS:interface
+LIBS:digital-audio
+LIBS:philips
+LIBS:display
+LIBS:cypress
+LIBS:siliconi
+LIBS:opto
+LIBS:atmel
+LIBS:contrib
+LIBS:valves
+LIBS:dht22_sensor_schem-cache
+EELAYER 25  0
+EELAYER END
+$Descr A4 11700 8267
+encoding utf-8
+Sheet 1 1
+Title ""
+Date "20 feb 2013"
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+NoConn ~ 4350 1250
+NoConn ~ 4350 1100
+NoConn ~ 4350 950 
+NoConn ~ 4350 800 
+$Comp
+L CONN_1 P5
+U 1 1 5124B8C3
+P 4500 1250
+F 0 "P5" H 4580 1250 40  0000 L CNN
+F 1 "CONN_1" H 4500 1305 30  0001 C CNN
+	1    4500 1250
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_1 P4
+U 1 1 5124B8C1
+P 4500 1100
+F 0 "P4" H 4580 1100 40  0000 L CNN
+F 1 "CONN_1" H 4500 1155 30  0001 C CNN
+	1    4500 1100
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_1 P3
+U 1 1 5124B8C0
+P 4500 950
+F 0 "P3" H 4580 950 40  0000 L CNN
+F 1 "CONN_1" H 4500 1005 30  0001 C CNN
+	1    4500 950 
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_1 P2
+U 1 1 5124B8BA
+P 4500 800
+F 0 "P2" H 4580 800 40  0000 L CNN
+F 1 "CONN_1" H 4500 855 30  0001 C CNN
+	1    4500 800 
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3450 2150 3450 2100
+Connection ~ 3200 2100
+Wire Wire Line
+	3450 2100 3200 2100
+Wire Wire Line
+	3750 1850 3200 1850
+Wire Wire Line
+	2200 2600 2200 1650
+Wire Wire Line
+	2400 2000 2400 1650
+Wire Wire Line
+	1950 1750 1950 1850
+Wire Wire Line
+	1950 1850 2100 1850
+Wire Wire Line
+	3750 1950 3300 1950
+Wire Wire Line
+	3650 1450 3650 1750
+Wire Wire Line
+	3650 1750 3750 1750
+Connection ~ 2100 1850
+Wire Wire Line
+	3850 1550 3650 1550
+Connection ~ 3650 1550
+Wire Wire Line
+	2100 2100 2100 1650
+Wire Wire Line
+	2500 2600 2100 2600
+Connection ~ 2200 2600
+Wire Wire Line
+	3200 1850 3200 2300
+$Comp
+L PWR_FLAG #FLG01
+U 1 1 510F1893
+P 3450 2150
+F 0 "#FLG01" H 3450 2420 30  0001 C CNN
+F 1 "PWR_FLAG" H 3450 2380 30  0000 C CNN
+	1    3450 2150
+	-1   0    0    1   
+$EndComp
+$Comp
+L PWR_FLAG #FLG02
+U 1 1 510F188E
+P 3850 1550
+F 0 "#FLG02" H 3850 1820 30  0001 C CNN
+F 1 "PWR_FLAG" H 3850 1780 30  0000 C CNN
+	1    3850 1550
+	1    0    0    -1  
+$EndComp
+Text Label 2500 2600 0    60   ~ 0
+sensor
+Text Label 3300 1950 0    60   ~ 0
+sensor
+$Comp
+L GND #PWR03
+U 1 1 510F182F
+P 3200 2300
+F 0 "#PWR03" H 3200 2300 30  0001 C CNN
+F 1 "GND" H 3200 2230 30  0001 C CNN
+	1    3200 2300
+	1    0    0    -1  
+$EndComp
+$Comp
+L VCC #PWR04
+U 1 1 510F182B
+P 3650 1450
+F 0 "#PWR04" H 3650 1550 30  0001 C CNN
+F 1 "VCC" H 3650 1550 30  0000 C CNN
+	1    3650 1450
+	1    0    0    -1  
+$EndComp
+$Comp
+L CONN_3 K1
+U 1 1 510F17A2
+P 4100 1850
+F 0 "K1" V 4050 1850 50  0000 C CNN
+F 1 "CONN_3" V 4150 1850 40  0000 C CNN
+	1    4100 1850
+	1    0    0    -1  
+$EndComp
+NoConn ~ 2300 1650
+$Comp
+L GND #PWR05
+U 1 1 510F1778
+P 2400 2000
+F 0 "#PWR05" H 2400 2000 30  0001 C CNN
+F 1 "GND" H 2400 1930 30  0001 C CNN
+	1    2400 2000
+	1    0    0    -1  
+$EndComp
+$Comp
+L VCC #PWR06
+U 1 1 510F1770
+P 1950 1750
+F 0 "#PWR06" H 1950 1850 30  0001 C CNN
+F 1 "VCC" H 1950 1850 30  0000 C CNN
+	1    1950 1750
+	1    0    0    -1  
+$EndComp
+$Comp
+L R R1
+U 1 1 510F175B
+P 2100 2350
+F 0 "R1" V 2180 2350 50  0000 C CNN
+F 1 "10k" V 2100 2350 50  0000 C CNN
+	1    2100 2350
+	-1   0    0    1   
+$EndComp
+$Comp
+L CONN_4 P1
+U 1 1 510F1629
+P 2250 1300
+F 0 "P1" V 2200 1300 50  0000 C CNN
+F 1 "DHT22" V 2300 1300 50  0000 C CNN
+	1    2250 1300
+	0    -1   -1   0   
+$EndComp
+$EndSCHEMATC

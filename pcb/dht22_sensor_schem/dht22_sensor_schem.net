@@ -1,0 +1,40 @@
+# EESchema Netlist Version 1.1 created  Wed 20 Feb 2013 06:52:53 AM EST
+(
+ ( /510F17A2 PINHEAD1-3 K1 CONN_3
+  ( 1 VCC )
+  ( 2 GND )
+  ( 3 /sensor )
+ )
+ ( /510F1629 PINHEAD1-4 P1 DHT22
+  ( 1 VCC )
+  ( 2 /sensor )
+  ( 3 ? )
+  ( 4 GND )
+ )
+ ( /5124B8BA 1pin P2 CONN_1
+  ( 1 ? )
+ )
+ ( /5124B8C0 1pin P3 CONN_1
+  ( 1 ? )
+ )
+ ( /5124B8C1 1pin P4 CONN_1
+  ( 1 ? )
+ )
+ ( /5124B8C3 1pin P5 CONN_1
+  ( 1 ? )
+ )
+ ( /510F175B R3-LARGE_PADS R1 10k
+  ( 1 /sensor )
+  ( 2 VCC )
+ )
+)
+*
+{ Allowed footprints by component:
+$component R1
+ R?
+ SM0603
+ SM0805
+ R?-*
+$endlist
+$endfootprintlist
+}

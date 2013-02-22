@@ -1,0 +1,150 @@
+Cmp-Mod V01 Created by CvPCB (2011-05-25)-stable date = Thu 21 Feb 2013 06:30:01 AM EST
+
+BeginCmp
+TimeStamp = /50CD8A2C;
+Reference = C1;
+ValeurCmp = .1mF;
+IdModule  = C1;
+EndCmp
+
+BeginCmp
+TimeStamp = /50CD8AE8;
+Reference = D1;
+ValeurCmp = LED;
+IdModule  = LEDV;
+EndCmp
+
+BeginCmp
+TimeStamp = /50D1679E;
+Reference = K1;
+ValeurCmp = Sensor1;
+IdModule  = SIL-3;
+EndCmp
+
+BeginCmp
+TimeStamp = /50D167A4;
+Reference = K2;
+ValeurCmp = Sensor0;
+IdModule  = SIL-3;
+EndCmp
+
+BeginCmp
+TimeStamp = /50CD8A01;
+Reference = P1;
+ValeurCmp = CONN_6;
+IdModule  = SIL-6;
+EndCmp
+
+BeginCmp
+TimeStamp = /50D000B3;
+Reference = P2;
+ValeurCmp = Battery;
+IdModule  = SIL-2;
+EndCmp
+
+BeginCmp
+TimeStamp = /50D1666E;
+Reference = P3;
+ValeurCmp = I2C_Sense;
+IdModule  = SIL-4;
+EndCmp
+
+BeginCmp
+TimeStamp = /50E515A4;
+Reference = P4;
+ValeurCmp = PWR_JMP;
+IdModule  = SIL-2;
+EndCmp
+
+BeginCmp
+TimeStamp = /51260506;
+Reference = P5;
+ValeurCmp = CONN_1;
+IdModule  = 1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /5126050A;
+Reference = P6;
+ValeurCmp = CONN_1;
+IdModule  = 1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /5126050B;
+Reference = P7;
+ValeurCmp = CONN_1;
+IdModule  = 1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /5126050D;
+Reference = P8;
+ValeurCmp = CONN_1;
+IdModule  = 1pin;
+EndCmp
+
+BeginCmp
+TimeStamp = /50CD8B00;
+Reference = Q1;
+ValeurCmp = MOSFET_N;
+IdModule  = TO92DGS;
+EndCmp
+
+BeginCmp
+TimeStamp = /50D16F5C;
+Reference = R1;
+ValeurCmp = 10k;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /50D17445;
+Reference = R2;
+ValeurCmp = 4.7k;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /50D1744F;
+Reference = R3;
+ValeurCmp = 4.7k;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /50CD8A22;
+Reference = R4;
+ValeurCmp = 1k;
+IdModule  = R3;
+EndCmp
+
+BeginCmp
+TimeStamp = /50CD885F;
+Reference = U1;
+ValeurCmp = 24AA1025;
+IdModule  = DIP-8__300_ELL;
+EndCmp
+
+BeginCmp
+TimeStamp = /50CD8855;
+Reference = U2;
+ValeurCmp = DS1337;
+IdModule  = DIP-8__300_ELL;
+EndCmp
+
+BeginCmp
+TimeStamp = /50CD886D;
+Reference = U3;
+ValeurCmp = ATTINY85V;
+IdModule  = DIP-8__300_ELL;
+EndCmp
+
+BeginCmp
+TimeStamp = /50CD8C7A;
+Reference = X1;
+ValeurCmp = 32.768_kHz;
+IdModule  = HC-18UV;
+EndCmp
+
+EndListe
