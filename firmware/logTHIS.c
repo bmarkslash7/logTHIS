@@ -133,7 +133,7 @@ void setup_boot_information(void);
 void setup_xeprom_address_vars(void);
 void setup_default(void);
 void update_xeprom_address_pointers(void);
-void update_xeprom_counters(uint8_t chunk);
+uint8_t update_xeprom_counters(uint8_t chunk);
 
 void write_eeprom(uint16_t);
 void write_xeprom_2(uint8_t, uint8_t);
@@ -608,25 +608,20 @@ int main (void)
             } // end while loop (humiditytemperaturecheck == 0)
 
 
-            /*
-            update_xeprom_counters(2);
-            if (!state.eeprom_full)
-              write_xeprom_2(minutes, hours);
-              */
+            // if we've switched banks, write relevant information
+            // recoards as first entries
+            if ( update_xeprom_counters(5) && 
+                 (state.eeprom_policy == EEPROM_POLICY_WRAP) )
+            {
+              write_record( RECORD_INFO, 5, (uint8_t *)("\0" "Temp") );
+              write_record( RECORD_INFO, 4, (uint8_t *)("\1" "Hum") );
+              write_record( RECORD_INFO, 4, (uint8_t *)("\2" "PAR") );
+                
+              get_rtc_str_date(rtc_str_date);
+              write_record( RECORD_DATE, 14, rtc_str_date);
+              update_xeprom_address_pointers();
+            }
 
-            /*
-            update_xeprom_counters(2);
-            if (!state.eeprom_full)
-              write_eeprom(PARdata);
-              */
-
-            /*
-            update_xeprom_counters(2);
-            if (!state.eeprom_full)
-              write_eeprom(PARdataCAPADC);
-              */
-
-            update_xeprom_counters(5);
             if (!state.eeprom_full)
               write_xeprom_1( RECORD_DATA | 4 );
 
@@ -936,8 +931,9 @@ uint16_t readPAR_SensorCAPADC (int pinPAR_SENSOR)
     return(returnPARdata);
 }
 
-void update_xeprom_counters(uint8_t chunk) 
+uint8_t update_xeprom_counters(uint8_t chunk) 
 {
+  uint8_t switched_bank=0;
 
   if ( (state.eeprom_mem_address + chunk) > EEPROM_BANK_SIZE )
   {
@@ -946,6 +942,7 @@ void update_xeprom_counters(uint8_t chunk)
     if      ( (state.eeprom_policy == EEPROM_POLICY_WRAP) &&
               (state.eeprom_i2c_address == EEPROM_I2C_ADDR1) )
     {
+      switched_bank = 1;
       state.eeprom_i2c_address = EEPROM_I2C_ADDR0;
       state.eeprom_mem_address = HEADER_SIZE + (ADDRESS_POINTER_SIZE * state.n_address_pointer);
     }
@@ -960,11 +957,14 @@ void update_xeprom_counters(uint8_t chunk)
     // otherwise advance to next bank
     else
     {
+      switched_bank = 1;
       state.eeprom_i2c_address = EEPROM_I2C_ADDR1;
       state.eeprom_mem_address = 0;
     }
 
   }
+
+  return switched_bank;
 
 }
 
