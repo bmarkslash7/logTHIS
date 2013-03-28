@@ -83,6 +83,11 @@ HUMIDITY code modified from https://github.com/nethoncho/Arduino-DHT22 user neth
  * -------------------------------------------
  *  Event       |      3        | holds miscellaneous event information (unused for now)
  * -------------------------------------------
+ *  Header      |      4        | extra meta data that holds a shortened version (relevant version)
+ *              |               |  of the header information
+ * -------------------------------------------
+ *  End         |      5        | indicates end of storage in current bank
+ * -------------------------------------------
  *
  */
 
@@ -103,15 +108,15 @@ HUMIDITY code modified from https://github.com/nethoncho/Arduino-DHT22 user neth
 #define HUMIDITY_CLOCK_TIME 6       // number compared to timing of humidity sensors to determine 0 or 1
 
 // EEPROM definitions
-#define EEPROM_I2C_ADDR0  0b1010000    // 1M, first bank EEPROM
-#define EEPROM_I2C_ADDR1  0b1011000    // 1M, second bank EEPROM
+#define EEPROM_I2C_ADDR0  0b1010000    // 1M, first bank EEPROM, 0x50
+#define EEPROM_I2C_ADDR1  0b1011000    // 1M, second bank EEPROM, 0x58
 
 #define EEPROM_BANK_SIZE 62500          // in bytes
 
 #define I2C_DELAY_MS 50
 
 // RTC definitions
-#define RTC_I2C_ADDR 0b1101000    // function needs to <<1 and add R/W bit
+#define RTC_I2C_ADDR 0b1101000    // function needs to <<1 and add R/W bit, 0x68
 
 
 #define DHT22_ERROR_VALUE -99.5
@@ -135,20 +140,21 @@ void setup_default(void);
 void update_xeprom_address_pointers(void);
 uint8_t update_xeprom_counters(uint8_t chunk);
 
-void write_eeprom(uint16_t);
-void write_xeprom_2(uint8_t, uint8_t);
-void write_xeprom_1(uint8_t byt);
-void read_eeprom(uint8_t *, uint8_t );
+void write_xeprom_uint16(uint16_t);
+void write_xeprom_uint8(uint8_t byt);
+void read_xeprom(uint8_t *, uint8_t );
 
 void write_record( uint8_t record_type, uint8_t record_len, uint8_t *buf);
 
 #define HEADER_SIZE 8
 #define ADDRESS_POINTER_SIZE 4
 
-#define RECORD_INFO  ( 0 << 4 )
-#define RECORD_DATE  ( 1 << 4 )
-#define RECORD_DATA  ( 2 << 4 )
-#define RECORD_EVENT ( 3 << 4 )
+#define RECORD_INFO     ( 0 << 4 )
+#define RECORD_DATE     ( 1 << 4 )
+#define RECORD_DATA     ( 2 << 4 )
+#define RECORD_EVENT    ( 3 << 4 )
+#define RECORD_HEADER   ( 4 << 4 )
+#define RECORD_END      ( 5 << 4 )
 
 enum{
   LOG_FREQ_1M = 0,
@@ -192,9 +198,11 @@ logTHIS_state_t state = { {0} };
 #define DEFAULT_EEPROM_POLICY           EEPROM_POLICY_STOP
 
 
-// temporary, should just go to sleep and never wake up
-// if we've gotten to a log full (without wraparound) state.
+// called if we've gotten to a log full (without wraparound) state.
 //
+// temporary, should just go to sleep and never wake up
+//   but for debugging purposes we're just going to flash
+//   forever
 void log_full_state(void)
 {
   set_DDRB_bit(1,1);
@@ -286,16 +294,23 @@ int main (void)
     // write header event
     update_xeprom_counters(6);
     if (state.eeprom_full) log_full_state();
-    write_xeprom_1( RECORD_INFO | 5 );
-    write_xeprom_1( (state.eeprom_policy << 4) | (state.log_frequency) );
-    write_xeprom_1( state.n_address_pointer );
-    write_xeprom_1( state.eeprom_i2c_address );
-    write_eeprom( state.eeprom_mem_address );
+    //write_xeprom_uint8( RECORD_INFO | 5 );
+    write_xeprom_uint8( RECORD_HEADER | 5 );
+    write_xeprom_uint8( (state.eeprom_policy << 4) | (state.log_frequency) );
+    write_xeprom_uint8( state.n_address_pointer );
+    write_xeprom_uint8( state.eeprom_i2c_address );
+    write_xeprom_uint16( state.eeprom_mem_address );
 
     // read RTC time and write date record
     // placeholder for now
     get_rtc_str_date(rtc_str_date);
     write_record( RECORD_DATE, 14, rtc_str_date);
+
+    // we want the event record, info records, header record and date record
+    //   to be recorded atomically, so only update the address pointers after
+    //   _all_ of them have been written.  If there's a reset or power down
+    //   event, we'll just pick up where we left off before starting to write
+    //   all of these records.
     update_xeprom_address_pointers();
 
 
@@ -362,6 +377,42 @@ int main (void)
         // compare minute to determine if measurement needs to be taken
         // minute time in BCD
         int measurement_is_needed = 0;
+        switch (state.log_frequency)
+        {
+          case LOG_FREQ_1M:
+            measurement_is_needed = 1;
+            break;
+          case LOG_FREQ_10M:
+            if ( (minutes==0) ||
+                 (minutes==0x10) ||
+                 (minutes==0x20) ||
+                 (minutes==0x30) ||
+                 (minutes==0x40) ||
+                 (minutes==0x50) )
+            { measurement_is_needed = 1; }
+            break;
+          case LOG_FREQ_15M:
+            if ( (minutes == 0) ||
+                 (minutes == 0x15) ||
+                 (minutes == 0x30) ||
+                 (minutes == 0x45) )
+            { measurement_is_needed = 1; }
+            break;
+          case LOG_FREQ_30M:
+            if ( (minutes == 0) ||
+                 (minutes == 0x30) )
+            { measurement_is_needed = 1; }
+            break;
+          case LOG_FREQ_1H:
+            if (minutes == 0) 
+            { measurement_is_needed = 1; }
+            break;
+          default:  // we should never get here
+            blink_always();
+            break;
+        }
+
+        /* hmm...
         if   (state.log_frequency == LOG_FREQ_1M )
             measurement_is_needed = 1;
         if ( (state.log_frequency == LOG_FREQ_10M ) &&
@@ -385,8 +436,7 @@ int main (void)
         if ( (state.log_frequency == LOG_FREQ_1H ) &&
                 (minutes == 0) )
             measurement_is_needed = 1;
-
-
+            */
 
         _delay_ms(500);
 
@@ -608,10 +658,11 @@ int main (void)
             } // end while loop (humiditytemperaturecheck == 0)
 
 
-            // if we've switched banks, write relevant information
-            // recoards as first entries
-            if ( update_xeprom_counters(5) && 
-                 (state.eeprom_policy == EEPROM_POLICY_WRAP) )
+            // if we've switched banks, 
+            //   write the first records that tell us
+            //   how to intpret the information and give a RTC date stamp.
+            //
+            if ( update_xeprom_counters(5) )
             {
               write_record( RECORD_INFO, 5, (uint8_t *)("\0" "Temp") );
               write_record( RECORD_INFO, 4, (uint8_t *)("\1" "Hum") );
@@ -622,17 +673,17 @@ int main (void)
               update_xeprom_address_pointers();
             }
 
+            // we've either determined we have enough space from the
+            //   'update_xeprom_counters(5)' call, or we're at the
+            //   beginning of a fresh bank, so just write the record
+            //   if eeprom_full hasn't been set
             if (!state.eeprom_full)
-              write_xeprom_1( RECORD_DATA | 4 );
-
-            if (!state.eeprom_full)
-              write_eeprom(currentTemperature);
-
-            if (!state.eeprom_full)
-              write_eeprom(currentHumidity);
-
-            if (!state.eeprom_full)
+            {
+              write_xeprom_uint8( RECORD_DATA | 4 );
+              write_xeprom_uint16(currentTemperature);
+              write_xeprom_uint16(currentHumidity);
               update_xeprom_address_pointers();
+            }
 
         } // end of if (MEASUREMENT IS NEEDED)
 
@@ -931,6 +982,25 @@ uint16_t readPAR_SensorCAPADC (int pinPAR_SENSOR)
     return(returnPARdata);
 }
 
+// Before writing to the eeprom, we want to position
+//   the bank and address pointers to the approriate location.
+//   'chunk' is the size of the contiguous block that wants
+//   to be written.  
+//
+// If a 'chunk' sized data block (in bytes)
+//   can be fit into the remaining external eeprom bank,
+//   do nothing.
+//
+// If writing a 'chunk' sized data block would put us past
+//   the current bank, we do the following:
+//
+//   * if we're in the first bank
+//     - switch to the second bank
+//   * if we're in the second bank and we have a wraparound policy
+//     - switch to the first bank
+//   * if we're in the second bank and we don't have a wraparoudn policy
+//     - set the 'eeprom_full' flag
+// 
 uint8_t update_xeprom_counters(uint8_t chunk) 
 {
   uint8_t switched_bank=0;
@@ -938,7 +1008,10 @@ uint8_t update_xeprom_counters(uint8_t chunk)
   if ( (state.eeprom_mem_address + chunk) > EEPROM_BANK_SIZE )
   {
 
-    // wrap around
+    // if out policy is wrap around and we're in the secnod bank
+    //   we switch back to the first bank and point the first
+    //   address at the location just past the header and address pointers
+    //
     if      ( (state.eeprom_policy == EEPROM_POLICY_WRAP) &&
               (state.eeprom_i2c_address == EEPROM_I2C_ADDR1) )
     {
@@ -947,14 +1020,19 @@ uint8_t update_xeprom_counters(uint8_t chunk)
       state.eeprom_mem_address = HEADER_SIZE + (ADDRESS_POINTER_SIZE * state.n_address_pointer);
     }
 
-    // signal stop
+    // else if our policy is to just stop loggin when we've reached capacity
+    //   set the 'eeprom_full' flag
+    //   
     else if ( (state.eeprom_policy == EEPROM_POLICY_STOP) &&
               (state.eeprom_i2c_address == EEPROM_I2C_ADDR1) )
     {
       state.eeprom_full = 1;
     }
 
-    // otherwise advance to next bank
+    // if neither of the two conditions above were met, we must be in 
+    //   the first bank.  We now wish to move to the second bank,
+    //   and have the memory pointer point to the first position
+    //
     else
     {
       switched_bank = 1;
@@ -964,12 +1042,15 @@ uint8_t update_xeprom_counters(uint8_t chunk)
 
   }
 
+  // we sometimes want to know that we've switched banks, 
+  //   so return that information
+  //
   return switched_bank;
 
 }
 
 
-void write_xeprom_1(uint8_t byt)
+void write_xeprom_uint8(uint8_t byt)
 {
   uint8_t messageBuf[6];
 
@@ -983,22 +1064,7 @@ void write_xeprom_1(uint8_t byt)
 
 }
 
-void write_xeprom_2(uint8_t byt0, uint8_t byt1)
-{
-  uint8_t messageBuf[6];
-
-  messageBuf[0] = (state.eeprom_i2c_address << TWI_ADR_BITS) ;
-  messageBuf[1] = (state.eeprom_mem_address >> 8) & 0xff;
-  messageBuf[2] = state.eeprom_mem_address & 0xff;
-  messageBuf[3] = byt0;
-  messageBuf[4] = byt1;
-  state.eeprom_mem_address += 2;
-  USI_TWI_Start_Read_Write( messageBuf, 5);
-  _delay_ms(I2C_DELAY_MS);
-
-}
-
-void write_eeprom(uint16_t word)
+void write_xeprom_uint16(uint16_t word)
 {
   uint8_t messageBuf[6];
 
@@ -1013,7 +1079,7 @@ void write_eeprom(uint16_t word)
 
 }
 
-void read_eeprom(uint8_t *buf, uint8_t n)
+void read_xeprom(uint8_t *buf, uint8_t n)
 {
   uint8_t i;
   uint8_t messageBuf[6];
@@ -1035,8 +1101,9 @@ void read_eeprom(uint8_t *buf, uint8_t n)
 
 }
 
-// write to eeprom address pointers
+// write to external eeprom address pointers
 // updates address_pointer_seq
+// BIG ENDIEN
 void update_xeprom_address_pointers(void)
 {
   uint16_t addr;
@@ -1061,7 +1128,8 @@ void update_xeprom_address_pointers(void)
 }
 
 
-// load current eeprom address variables from eeprom address pointers
+// load current external eeprom address variables 
+// from external eeprom address pointers
 //
 void setup_xeprom_address_vars()
 {
@@ -1079,7 +1147,7 @@ void setup_xeprom_address_vars()
   for (i=0; i < state.n_address_pointer; i++)
   {
     state.eeprom_mem_address = HEADER_SIZE + ( ADDRESS_POINTER_SIZE * i);
-    read_eeprom( address_pointer, ADDRESS_POINTER_SIZE );
+    read_xeprom( address_pointer, ADDRESS_POINTER_SIZE );
 
     // if we haven't read a max address yet, just ignore
     // otherwise check if we've wrapped
@@ -1138,18 +1206,21 @@ void setup_xeprom_address_vars()
 
 }
 
+// read boot information from external eeprom
 void setup_boot_information(void)
 {
   uint8_t i;
   uint8_t messageBuf[6];
   uint8_t header[HEADER_SIZE];
 
+  // position write head at (0,0)
   messageBuf[0] = (EEPROM_I2C_ADDR0 << TWI_ADR_BITS) ;
   messageBuf[1] = 0;
   messageBuf[2] = 0;
   USI_TWI_Start_Read_Write( messageBuf, 3);
   _delay_ms(I2C_DELAY_MS);
 
+  // read in header
   for (i=0; i<HEADER_SIZE; i++)
   {
     messageBuf[0] = (EEPROM_I2C_ADDR0 << TWI_ADR_BITS) | (1<<TWI_READ_BIT);
@@ -1160,6 +1231,7 @@ void setup_boot_information(void)
     header[i] = messageBuf[1];
   }
 
+  // setup state information
   state.eeprom_policy  = (header[0] & 0xf0) >> 4;
   state.log_frequency  = (header[0] & 0x0f);
   state.n_address_pointer = header[1];
@@ -1184,9 +1256,9 @@ void write_record( uint8_t record_type, uint8_t record_len, uint8_t *buf)
   update_xeprom_counters( record_len + 1 );
   if (state.eeprom_full) return;
 
-  write_xeprom_1( record_type | record_len );
+  write_xeprom_uint8( record_type | record_len );
   for (i=0; i < record_len; i++)
-    write_xeprom_1( buf[i] );
+    write_xeprom_uint8( buf[i] );
   
 }
 
@@ -1197,17 +1269,17 @@ void setup_default(void)
   state.eeprom_i2c_address = DEFAULT_EEPROM;
   state.eeprom_mem_address = 0;
 
-  write_xeprom_1( DEFAULT_EEPROM_POLICY | DEFAULT_FREQ );
-  write_xeprom_1( DEFAULT_N_ADDRESS );
+  write_xeprom_uint8( DEFAULT_EEPROM_POLICY | DEFAULT_FREQ );
+  write_xeprom_uint8( DEFAULT_N_ADDRESS );
 
   for (i=2; i<HEADER_SIZE; i++)
-    write_xeprom_1(0);
+    write_xeprom_uint8(0);
 
   for (i=0; i<DEFAULT_N_ADDRESS; i++)
   {
-    write_xeprom_1(i);
-    write_xeprom_1(DEFAULT_EEPROM);
-    write_eeprom( HEADER_SIZE + (DEFAULT_N_ADDRESS*ADDRESS_POINTER_SIZE) );
+    write_xeprom_uint8(i);
+    write_xeprom_uint8(DEFAULT_EEPROM);
+    write_xeprom_uint16( HEADER_SIZE + (DEFAULT_N_ADDRESS*ADDRESS_POINTER_SIZE) );
   }
 
 }
@@ -1237,22 +1309,23 @@ void get_rtc_str_date(uint8_t *dt)
     buf[i] = messageBuf[1];
   }
 
-  // we're assuming we live in the future
-  //year
+  // we assume we're living in the future
+  //
+  // year
   dt[0] = '2';
   dt[1] = '0';
   dt[2] = ((buf[6] & 0xf0) >> 4) + '0';
   dt[3] =  (buf[6] & 0x0f) + '0';
 
-  //month
+  // month
   dt[4] = ((buf[5] & 0x10) >> 4) + '0';
   dt[5] =  (buf[5] & 0x0f) + '0';
 
-  //date
+  // date
   dt[6] = ((buf[4] & 0x30) >> 4) + '0';
   dt[7] =  (buf[4] & 0x0f) + '0';
 
-  //hour
+  // hour
   if ( buf[2] & 0x40 ) // check 12 / 24' bit
   {
     // convert from bcd to integer
@@ -1265,13 +1338,13 @@ void get_rtc_str_date(uint8_t *dt)
     dt[0] = (h % 10) + '0';
     
   }
-  else  //mil time
+  else  // it's military time
   {
     dt[8] = ((buf[2] & 0x30) >> 4) + '0';
     dt[9] =  (buf[2] & 0x0f) + '0';
   }
 
-  //minute
+  // minute
   dt[10] = ((buf[1] & 0x70) >> 4) + '0';
   dt[11] =  (buf[1] & 0x0f) + '0';
 
