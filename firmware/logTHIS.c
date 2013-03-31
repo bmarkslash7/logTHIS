@@ -41,10 +41,10 @@ HUMIDITY code modified from https://github.com/nethoncho/Arduino-DHT22 user neth
  *
  * header format:
  *
- *        policy : frequency |   version   |   version   |   reserved  
- *      -----------------------------------------------------------------
- * bits |   4         4      |     8       |      8      |     5*8 = 40 |
- *      -----------------------------------------------------------------
+ *        policy : frequency | # mem addr  |   reserved  
+ *      -------------------------------------------------
+ * bits |   4         4      |     8       |   5*8 = 40 |
+ *      -------------------------------------------------
  *
  *      total bytes: 8
  *
@@ -108,8 +108,8 @@ HUMIDITY code modified from https://github.com/nethoncho/Arduino-DHT22 user neth
 #define HUMIDITY_CLOCK_TIME 6       // number compared to timing of humidity sensors to determine 0 or 1
 
 // EEPROM definitions
-#define EEPROM_I2C_ADDR0  0b1010000    // 1M, first bank EEPROM, 0x50
-#define EEPROM_I2C_ADDR1  0b1011000    // 1M, second bank EEPROM, 0x58
+#define EEPROM_I2C_ADDR0  0b01010000    // 1M, first bank EEPROM, 0x50
+#define EEPROM_I2C_ADDR1  0b01010100    // 1M, second bank EEPROM, 0x54
 
 #define EEPROM_BANK_SIZE 62500          // in bytes
 
@@ -216,6 +216,22 @@ void log_full_state(void)
   set_DDRB_bit(1,0);
 }
 
+// indicate a log full event.  Blink for a second
+// then continue on.
+void indicate_log_full(void)
+{
+  int i;
+  set_DDRB_bit(1,1);
+  for ( i=0 ; i<10 ; i++ )
+  {
+    set_PORTB_bit(1,1);  // sets B0 as high
+    _delay_ms(100);
+    set_PORTB_bit(1,0); // sets B0 as low
+    _delay_ms(100);
+  }
+  set_DDRB_bit(1,0);
+}
+
 void blink_always(void)
 {
   set_DDRB_bit(1,1);
@@ -284,6 +300,8 @@ int main (void)
     }
 
 
+    // DEBUG - DISABLE INITIAL WRITE RECORD FOR NOW
+
     // write header event
     write_record( RECORD_EVENT, 4, (uint8_t *)"boot");
     write_record( RECORD_INFO, 5, (uint8_t *)("\0" "Temp") );
@@ -306,6 +324,7 @@ int main (void)
     get_rtc_str_date(rtc_str_date);
     write_record( RECORD_DATE, 14, rtc_str_date);
 
+
     // we want the event record, info records, header record and date record
     //   to be recorded atomically, so only update the address pointers after
     //   _all_ of them have been written.  If there's a reset or power down
@@ -314,23 +333,7 @@ int main (void)
     update_xeprom_address_pointers();
 
 
-    // *************************************************
-    // DEBUG!!
-    //log_full_state();
-    //blink_always();
-
-    /*
-    sleep_enable();
-    sei();
-    sleep_cpu();
-    sleep_disable();
-    blink_always();
-    */
-
-    // *************************************************
-
     //-------------------------------
-
 
     // write alarm to RTC for once per minute
     set_RTC_bit(RTC_I2C_ADDR, 0x0E, 1, 1);    // set A1IE bit to 1, enable alarm
@@ -340,13 +343,12 @@ int main (void)
     set_RTC_bit(RTC_I2C_ADDR, 0x0C, 7, 1);  // set A2M3 bit to 1
     set_RTC_bit(RTC_I2C_ADDR, 0x0B, 7, 1);  // set A2M2 bit to 1
 
-    // ******************************************************************
-    // ------ BEGINNING OF LOOP THAT GOES AROUND AND AROUND -------------
-    // ******************************************************************
+    // **********************************
+    // ------ main processing loop ------
+    // **********************************
 
     for (;;)
     {
-
         cli();
 
         set_DDRB_bit(PAR_SENSOR,1);   // turn PAR_SENSOR into OUTPUT
@@ -371,7 +373,6 @@ int main (void)
 
         uint8_t minutes = timeBuf[1];    // saves minutes for later use
         uint8_t hours = 0;
-
 
 
         // compare minute to determine if measurement needs to be taken
@@ -412,33 +413,8 @@ int main (void)
             break;
         }
 
-        /* hmm...
-        if   (state.log_frequency == LOG_FREQ_1M )
-            measurement_is_needed = 1;
-        if ( (state.log_frequency == LOG_FREQ_10M ) &&
-                ( (minutes==0) ||
-                  (minutes==0x10) ||
-                  (minutes==0x20) ||
-                  (minutes==0x30) ||
-                  (minutes==0x40) ||
-                  (minutes==0x50) ) )
-            measurement_is_needed = 1;
-        if ( (state.log_frequency == LOG_FREQ_15M ) &&
-                ( (minutes == 0) ||
-                  (minutes == 0x15) ||
-                  (minutes == 0x30) ||
-                  (minutes == 0x45) ) )
-            measurement_is_needed = 1;
-        if ( (state.log_frequency == LOG_FREQ_30M ) &&
-                ( (minutes == 0) ||
-                  (minutes == 0x30) ) )
-            measurement_is_needed = 1;
-        if ( (state.log_frequency == LOG_FREQ_1H ) &&
-                (minutes == 0) )
-            measurement_is_needed = 1;
-            */
-
         _delay_ms(500);
+
 
         // determine if a measurement is needed
         if (measurement_is_needed)
@@ -982,6 +958,10 @@ uint16_t readPAR_SensorCAPADC (int pinPAR_SENSOR)
     return(returnPARdata);
 }
 
+// Make sure to essentially reserve 'chunk' number of bytes,
+//   and if not possible in this bank, switch to the next
+//   bank if need be.
+//
 // Before writing to the eeprom, we want to position
 //   the bank and address pointers to the approriate location.
 //   'chunk' is the size of the contiguous block that wants
@@ -1066,6 +1046,11 @@ void write_xeprom_uint8(uint8_t byt)
 
 void write_xeprom_uint16(uint16_t word)
 {
+
+  write_xeprom_uint8( (word >> 8) & 0xff );
+  write_xeprom_uint8( word & 0xff );
+
+  /*
   uint8_t messageBuf[6];
 
   messageBuf[0] = (state.eeprom_i2c_address << TWI_ADR_BITS) ;
@@ -1076,6 +1061,7 @@ void write_xeprom_uint16(uint16_t word)
   state.eeprom_mem_address += 2;
   USI_TWI_Start_Read_Write( messageBuf, 5);
   _delay_ms(I2C_DELAY_MS);
+  */
 
 }
 
@@ -1104,6 +1090,8 @@ void read_xeprom(uint8_t *buf, uint8_t n)
 // write to external eeprom address pointers
 // updates address_pointer_seq
 // BIG ENDIEN
+// assume we're writing within page boundayr, so don't do any
+//   page boundary checks
 void update_xeprom_address_pointers(void)
 {
   uint16_t addr;
@@ -1206,7 +1194,14 @@ void setup_xeprom_address_vars()
 
 }
 
-// read boot information from external eeprom
+// Read boot information from external eeprom.
+//   - read initial header in first bank, first HEADER_SIZE
+//     bytes
+//   - read in external eeprom header pointers based on
+//     how many are recorded in the header.
+//   - set the 'default_init' flag if we see it's a newly
+//     flashed external eeprom
+//
 void setup_boot_information(void)
 {
   uint8_t i;
@@ -1249,6 +1244,12 @@ void setup_boot_information(void)
 
 }
 
+// Write a record type.
+// Will write record_len + 1 bytes into the external eeprom, if able.
+// See above for record format.
+// If unable to write a record, just returns (eeprom_full flag should
+//   have been set).
+//
 void write_record( uint8_t record_type, uint8_t record_len, uint8_t *buf)
 {
   uint8_t i;
@@ -1262,6 +1263,13 @@ void write_record( uint8_t record_type, uint8_t record_len, uint8_t *buf)
   
 }
 
+// Setup default header and external eeprom headers.
+// If we see this is a newly flashed external eeprom,
+//   setup the header to it's default value 
+//   and setup external eeprom memory pointers
+//
+// Assume all information is within page boundary
+//
 void setup_default(void)
 {
   uint8_t i;
@@ -1284,7 +1292,17 @@ void setup_default(void)
 
 }
 
-// convert RTC date into a string
+// Convert RTC date to a human readable string
+// FORMAT:
+//   YYYYMMDDHHmmss
+//
+//   YYYY - Year
+//   MM   - Month
+//   DD   - Day
+//   HH   - Hour
+//   mm   - Minute
+//   ss   - Second
+//
 void get_rtc_str_date(uint8_t *dt)
 {
 
